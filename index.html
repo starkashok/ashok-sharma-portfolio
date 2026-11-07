@@ -1,0 +1,1957 @@
+<meta charset="utf-8">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Ashok Sharma — Liquid Glass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   DESIGN PLAN — one continuous dive, one committed dark world.
+   Surface (5 ft): the glass "as" floats under a rippling surface.
+   Scrolling sinks the camera: bubbles stream up past the lens,
+   pressure squeezes the frame at 15 / 30 / 60 / 100 ft, the
+   field of view narrows, and type submerges (it wobbles, blurs
+   and goes blue as it passes through the water).
+   Water optics: red absorbed first, then yellow — teal shallows
+   → clear blue → indigo → near-black. Life follows real reef
+   zonation and gets *brighter* as the water gets darker:
+     0–30 ft  kelp, sea lettuce, grass, red feather algae, anemones
+     30–60 ft sea fans, tube & barrel sponges, coralline crust
+     60–100 ft plate corals, rhodoliths, fluorescent corals
+     100 ft+  black coral forests, glass sponges, sea pens,
+              comb jellies with running rainbow cilia
+   Projects: five glass doors. Each has floating tags of what was
+   done, a "Quick demo" (camera enters the door → glass sheet)
+   and "Check product". The sheet expands to the full project.
+   Type: Instrument Serif (display), Geist (text), Geist Mono
+   (instruments, labels).
+   ============================================================ */
+:root{
+  --void:   #040706;
+  --fg:     #EEF3F1;
+  --fg-2:   #C6D3D9;
+  --fg-dim: #8EA2AC;
+  --ice:    #A6E1EE;
+  --serif:  'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --sans:   'Geist', 'Segoe UI', system-ui, sans-serif;
+  --mono:   'Geist Mono', 'SF Mono', Menlo, monospace;
+  --liquid: cubic-bezier(.16,.84,.26,1);
+  --pc:     166,225,238;
+  color-scheme: dark;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; background:var(--void); }
+html{ scrollbar-width:none; }
+html::-webkit-scrollbar{ display:none; }
+html.locked{ overflow:hidden; }
+body{ color:var(--fg); font-family:var(--sans); overscroll-behavior:none; -webkit-tap-highlight-color:transparent; -webkit-font-smoothing:antialiased; }
+.dive{ height: 900vh; }
+a{ color:inherit; }
+
+#gl{ position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:pan-y; cursor:grab; z-index:0; }
+#gl.dragging{ cursor:grabbing; }
+#gl.door{ cursor:pointer; }
+.grain{
+  position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.05; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+.layer{ position:fixed; inset:0; z-index:3; pointer-events:none; }
+.mono{ font-family:var(--mono); font-size:.62rem; letter-spacing:.22em; text-transform:uppercase; }
+
+/* ---------- fold 1 — at the surface ---------- */
+.stage{ display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding-bottom: max(6vh, calc(env(safe-area-inset-bottom,0px) + 36px)); }
+.stage .sub{ display:flex; flex-direction:column; align-items:center; }
+.wordmark{
+  font-family:var(--serif); font-weight:400; font-size:clamp(2.1rem,5vw,3.4rem); line-height:1; letter-spacing:-.01em;
+  opacity:0; transform:translateY(12px);
+  transition: opacity 1.6s var(--liquid), transform 1.6s var(--liquid);
+  text-shadow: 0 2px 24px rgba(0,0,0,.55);
+}
+.wordmark em{ font-style:italic; color:var(--ice); }
+.caption{ margin-top:14px; color:var(--fg-dim); opacity:0; transition: opacity 1.6s var(--liquid) .3s; text-shadow:0 1px 10px rgba(0,0,0,.7); }
+.cue{ margin-top:24px; display:flex; flex-direction:column; align-items:center; gap:10px; color:var(--fg-dim); opacity:0; transition: opacity 1.6s var(--liquid) .6s; }
+.cue i{ width:1px; height:34px; background:linear-gradient(var(--ice), transparent); animation: sink 2.2s ease-in-out infinite; }
+@keyframes sink{ 0%{ transform:scaleY(.2); transform-origin:top; opacity:.3 } 50%{ transform:scaleY(1); opacity:1 } 100%{ transform:scaleY(.2); transform-origin:bottom; opacity:.3 } }
+.show{ opacity:1 !important; transform:none !important; }
+
+/* ---------- depth gauge ---------- */
+.gauge{
+  position:fixed; z-index:4; pointer-events:none;
+  right: max(18px, env(safe-area-inset-right,0px)); top:50%; transform:translateY(-50%);
+  height:min(46vh, 380px); width:86px; color:var(--fg-dim);
+  opacity:0; transition: opacity .8s var(--liquid);
+}
+.gauge .rail{ position:absolute; right:6px; top:0; bottom:0; width:1px; background:linear-gradient(rgba(166,225,238,.55), rgba(166,225,238,.06)); }
+.gauge .tick{ position:absolute; right:14px; transform:translateY(-50%); white-space:nowrap; font-size:.56rem; }
+.gauge .tick::after{ content:''; position:absolute; right:-10px; top:50%; width:5px; height:1px; background:currentColor; }
+.gauge .mark{ position:absolute; right:2px; width:9px; height:9px; border-radius:50%; transform:translateY(-50%); background:var(--ice); box-shadow:0 0 0 4px rgba(166,225,238,.16), 0 0 14px rgba(166,225,238,.6); }
+.gauge .mark.pulse{ animation: pressure .9s var(--liquid); }
+@keyframes pressure{ 0%{ box-shadow:0 0 0 4px rgba(166,225,238,.16), 0 0 14px rgba(166,225,238,.6); } 30%{ box-shadow:0 0 0 14px rgba(166,225,238,0), 0 0 30px rgba(166,225,238,.9); } 100%{ box-shadow:0 0 0 4px rgba(166,225,238,.16), 0 0 14px rgba(166,225,238,.6); } }
+.gauge .read{ position:absolute; right:22px; transform:translateY(-50%); color:var(--fg); font-size:.64rem; white-space:nowrap; }
+.gauge .zone{ position:absolute; right:22px; transform:translateY(calc(-50% + 16px)); color:var(--ice); font-size:.5rem; white-space:nowrap; opacity:.8; }
+@media (max-width:640px){ .gauge{ width:64px; height:34vh; } .gauge .tick, .gauge .zone{ display:none; } }
+
+/* ---------- fold 2 — the designer ---------- */
+.bio{ display:flex; align-items:center; justify-content:center; padding-inline: max(16px, env(safe-area-inset-left,0px)) max(16px, env(safe-area-inset-right,0px)); }
+.glasscard{
+  position:relative;
+  border-radius: 34px;
+  background: linear-gradient(160deg, rgba(255,255,255,.085), rgba(255,255,255,.02) 42%, rgba(var(--pc),.05));
+  border: 1px solid rgba(220,240,255,.14);
+  box-shadow: 0 1px 0 rgba(255,255,255,.14) inset, 0 -1px 0 rgba(255,255,255,.04) inset, 0 50px 90px -30px rgba(0,0,0,.75);
+  backdrop-filter: blur(20px) saturate(170%);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+}
+.glasscard::before{ /* specular sheen along the top edge, like a real glass slab */
+  content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), transparent 22%);
+  mask: linear-gradient(#000,#000) content-box exclude, linear-gradient(#000,#000);
+  padding:1px;
+}
+#bioCard{ width:min(640px, 100%); padding: clamp(28px,4.8vw,50px); opacity:0; pointer-events:auto; }
+.eyebrow{ color:var(--ice); }
+.quote{ margin:18px 0 0; font-family:var(--serif); font-weight:400; font-size:clamp(1.7rem,3.8vw,2.6rem); line-height:1.12; letter-spacing:-.01em; text-wrap:balance; }
+.quote em{ color:var(--ice); }
+.who{ margin-top:22px; color:var(--fg-2); font-size:1rem; line-height:1.65; max-width:52ch; font-weight:350; }
+.who b{ color:var(--fg); font-weight:500; }
+.principles{ list-style:none; margin:26px 0 0; padding:0; display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.principles li{ color:var(--fg-dim); padding-top:12px; border-top:1px solid rgba(220,240,255,.14); line-height:1.5; }
+@media (max-width:560px){ .principles{ grid-template-columns:1fr; } }
+
+/* ---------- fold 3 — the deep ---------- */
+.workhead{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; opacity:0; }
+.workhead h2{ margin:16px 0 0; font-family:var(--serif); font-weight:400; font-size:clamp(2.2rem,6vw,4rem); line-height:1; letter-spacing:-.01em; text-wrap:balance; }
+.workhead h2 em{ color:var(--ice); }
+.workhead p{ margin:16px 0 0; color:var(--fg-dim); }
+
+.dlabel{ position:fixed; left:0; top:0; z-index:5; width:300px; opacity:0; pointer-events:none; will-change: transform, opacity; }
+.dlabel.live{ pointer-events:auto; }
+.dlabel .n{ color:rgb(var(--pc)); }
+.dlabel .t{ margin-top:8px; font-family:var(--serif); font-size:clamp(1.7rem,3vw,2.3rem); line-height:1.02; text-shadow:0 2px 18px rgba(0,0,0,.6); }
+.dlabel .c{ margin-top:8px; color:var(--fg-dim); }
+.ctas{ margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; }
+.dlabel.right .ctas{ justify-content:flex-end; }
+.dlabel.center .ctas{ justify-content:center; }
+.btn{
+  appearance:none; border:0; cursor:pointer; text-decoration:none;
+  display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 16px; border-radius:999px;
+  font-family:var(--sans); font-size:.84rem; font-weight:500; letter-spacing:.005em; color:var(--fg);
+  background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.05));
+  box-shadow: 0 1px 0 rgba(255,255,255,.22) inset, 0 0 0 1px rgba(220,240,255,.16) inset, 0 10px 30px -12px rgba(0,0,0,.6);
+  backdrop-filter: blur(14px) saturate(170%); -webkit-backdrop-filter: blur(14px) saturate(170%);
+  transition: transform .35s var(--liquid), background .35s var(--liquid), box-shadow .35s var(--liquid);
+}
+.btn:hover, .btn:focus-visible{ transform:translateY(-1px); background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.07)); outline:none; box-shadow: 0 1px 0 rgba(255,255,255,.3) inset, 0 0 0 1px rgba(var(--pc),.55) inset, 0 12px 34px -10px rgba(var(--pc),.45); }
+.btn:active{ transform:scale(.97); }
+.btn.primary{ background: linear-gradient(180deg, rgba(var(--pc),.42), rgba(var(--pc),.16)); box-shadow: 0 1px 0 rgba(255,255,255,.3) inset, 0 0 0 1px rgba(var(--pc),.55) inset, 0 12px 34px -12px rgba(var(--pc),.55); }
+.btn svg{ width:14px; height:14px; flex:none; }
+
+.tag{
+  position:fixed; left:0; top:0; z-index:4; pointer-events:none; opacity:0; will-change: transform, opacity;
+  display:inline-flex; align-items:center; gap:7px; height:30px; padding:0 12px 0 9px; border-radius:999px; white-space:nowrap;
+  font-family:var(--sans); font-size:.74rem; font-weight:450; color:var(--fg);
+  background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
+  box-shadow: 0 1px 0 rgba(255,255,255,.2) inset, 0 0 0 1px rgba(var(--pc),.28) inset;
+  backdrop-filter: blur(10px) saturate(160%); -webkit-backdrop-filter: blur(10px) saturate(160%);
+}
+.tag svg{ width:13px; height:13px; color:rgb(var(--pc)); }
+@media (max-width:640px){ .tag{ display:none; } }
+
+/* ---------- the glass door sheet ---------- */
+.sheet{
+  position:fixed; inset:0; z-index:10; display:flex; align-items:center; justify-content:center;
+  padding: max(20px, env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) max(20px, env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px));
+  /* one clean layer: the world behind is dimmed and frosted, nothing reads as a second shape */
+  background: rgba(3,8,14,.5);
+  backdrop-filter: blur(22px) saturate(115%); -webkit-backdrop-filter: blur(22px) saturate(115%);
+  opacity:0; pointer-events:none; transition: opacity .6s var(--liquid);
+}
+.plogo{ display:block; height:34px; width:auto; max-width:180px; object-fit:contain; margin-top:18px; }
+.sheet.open{ opacity:1; pointer-events:auto; }
+#sheetCard{
+  width:min(720px, 100%); max-height: 88vh; overflow:auto; padding: clamp(26px,4.5vw,48px);
+  background: linear-gradient(160deg, rgba(14,22,32,.72), rgba(8,12,20,.78) 50%, rgba(var(--pc),.10)); /* the door glows behind it — keep text legible */
+  transform: translateY(24px) scale(.96); transition: transform .8s var(--liquid), width .6s var(--liquid);
+  scrollbar-width:thin;
+}
+.sheet.open #sheetCard{ transform:none; }
+.sheet.full #sheetCard{ width:min(900px, 100%); }
+.sheet .top{ display:flex; justify-content:space-between; align-items:center; gap:16px; }
+.sheet .x{ appearance:none; border:0; cursor:pointer; width:38px; height:38px; border-radius:50%; color:var(--fg); background:rgba(255,255,255,.08); box-shadow:0 0 0 1px rgba(220,240,255,.16) inset; display:grid; place-items:center; transition: background .3s var(--liquid); }
+.sheet .x:hover, .sheet .x:focus-visible{ background:rgba(255,255,255,.16); outline:none; }
+.sheet h3{ margin:14px 0 0; font-family:var(--serif); font-weight:400; font-size:clamp(2.2rem,5vw,3.4rem); line-height:1; letter-spacing:-.01em; }
+.sheet .meta{ margin-top:12px; color:var(--fg-dim); }
+.sheet .lede{ margin-top:20px; color:var(--fg-2); line-height:1.65; font-size:1.02rem; max-width:58ch; font-weight:350; }
+.sheet h4{ margin:26px 0 12px; color:var(--fg-dim); font-weight:400; }
+.did{ display:flex; flex-wrap:wrap; gap:8px; }
+.did .tag{ position:static; opacity:1; pointer-events:auto; transform:none; }
+.did .tag svg{ color:rgb(var(--pc)); }
+.metrics{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:10px; }
+.metric{ padding:16px; border-radius:18px; background:rgba(255,255,255,.04); box-shadow:0 0 0 1px rgba(220,240,255,.1) inset; }
+.metric b{ display:block; font-family:var(--serif); font-weight:400; font-size:1.7rem; line-height:1.05; color:var(--fg); }
+.metric span{ display:block; margin-top:6px; color:var(--fg-dim); font-size:.8rem; line-height:1.4; }
+.full-only{ display:none; }
+.sheet.full .full-only{ display:block; }
+.story{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.story div{ padding:16px; border-radius:18px; background:rgba(255,255,255,.035); box-shadow:0 0 0 1px rgba(220,240,255,.08) inset; }
+.story h5{ margin:0; color:rgb(var(--pc)); font-weight:400; }
+.story p{ margin:10px 0 0; color:var(--fg-2); font-size:.9rem; line-height:1.6; }
+@media (max-width:640px){ .story{ grid-template-columns:1fr; } }
+.sheet .ctas{ margin-top:26px; }
+
+/* ---------- Sparkonomy quick view: no card, the story floats on the water ---------- */
+#sheetSpark{ display:none; }
+.sheet.spark #sheetSpark{ display:block; }
+.sheet.spark:not(.full) .std{ display:none; }
+.sheet.spark .std-metrics{ display:none; }
+.sheet.spark{ background: radial-gradient(120% 90% at 50% 45%, rgba(4,14,22,.55), rgba(2,6,12,.82)); }
+.sheet.spark #sheetCard{ background:none; border:0; box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none; width:min(780px,100%); }
+.sheet.spark #sheetCard::before{ display:none; }
+.sheet.spark.full #sheetCard{ width:min(900px,100%); }
+.sp-sub{ margin-top:12px; color:var(--fg-2); font-size:1rem; font-weight:350; }
+.sp-sub b{ color:var(--fg); font-weight:500; }
+.sp-stats{ margin-top:30px; display:grid; grid-template-columns: 1.25fr 1fr 1fr; gap:clamp(14px,3vw,34px); align-items:end; }
+.sp-stat .v{ font-family:var(--serif); font-weight:400; line-height:.9; letter-spacing:-.02em; color:var(--fg); font-size:clamp(2.4rem,6vw,3.6rem); font-variant-numeric: tabular-nums; }
+.sp-stat.hero .v{ font-size:clamp(3.4rem,10vw,5.6rem); }
+.sp-stat .v small{ font-size:.5em; color:rgb(var(--pc)); margin-left:2px; }
+.sp-stat .l{ margin-top:10px; color:var(--fg-dim); font-size:.84rem; line-height:1.45; }
+.sp-stat .up{ display:inline-flex; align-items:center; gap:6px; margin-top:10px; height:24px; padding:0 10px; border-radius:999px; font-size:.72rem; font-weight:500; color:#9ff5cf; background:rgba(80,230,160,.12); box-shadow:0 0 0 1px rgba(110,240,180,.28) inset; }
+.sp-chart{ margin-top:30px; position:relative; }
+.sp-chart .hd{ display:flex; justify-content:space-between; align-items:baseline; color:var(--fg-dim); }
+.sp-chart svg{ display:block; width:100%; height:auto; margin-top:10px; overflow:visible; }
+.sp-line{ fill:none; stroke:url(#spStroke); stroke-width:3; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:1; }
+.sp-flow{ fill:none; stroke:#e9fbff; stroke-width:3; stroke-linecap:round; stroke-dasharray:.07 .93; stroke-dashoffset:1; opacity:0; filter:drop-shadow(0 0 6px rgba(140,230,255,.9)); }
+.sp-area{ fill:url(#spFill); opacity:0; }
+.sp-grid line{ stroke:rgba(220,240,255,.08); stroke-width:1; }
+.sp-axis{ fill:rgba(220,240,255,.5); font-family:var(--mono); font-size:11px; letter-spacing:.12em; }
+.sp-dot{ fill:#061018; stroke:rgb(var(--pc)); stroke-width:2.5; opacity:0; transform-box:fill-box; transform-origin:center; transform:scale(.2); }
+.sp-now{ fill:rgb(var(--pc)); opacity:0; transform-box:fill-box; transform-origin:center; }
+.sp-tip{ opacity:0; }
+.sp-tip rect{ fill:rgba(255,255,255,.1); stroke:rgba(var(--pc),.5); }
+.sp-tip text{ fill:var(--fg); font-family:var(--sans); font-size:12px; font-weight:500; }
+.sheet.open.spark .sp-line{ transition: stroke-dashoffset 1.8s cubic-bezier(.5,0,.2,1) .35s; stroke-dashoffset:0; }
+.sheet.open.spark .sp-area{ transition: opacity 1.2s ease 1.1s; opacity:1; }
+.sheet.open.spark .sp-dot{ transition: opacity .4s ease, transform .6s var(--liquid); opacity:1; transform:scale(1); }
+.sheet.open.spark .sp-dot:nth-of-type(1){ transition-delay:.45s; } .sheet.open.spark .sp-dot:nth-of-type(2){ transition-delay:1.2s; } .sheet.open.spark .sp-dot:nth-of-type(3){ transition-delay:2.0s; }
+.sheet.open.spark .sp-flow{ animation: spflow 3.2s cubic-bezier(.5,0,.3,1) 2.3s infinite; }
+.sheet.open.spark .sp-now{ animation: spnow 2.2s ease-out 2.2s infinite; }
+.sheet.open.spark .sp-tip{ transition: opacity .6s ease 2.2s; opacity:1; }
+@keyframes spflow{ 0%{ stroke-dashoffset:1.07; opacity:0 } 15%{ opacity:1 } 85%{ opacity:1 } 100%{ stroke-dashoffset:0; opacity:0 } }
+@keyframes spnow{ 0%{ opacity:.55; transform:scale(1) } 100%{ opacity:0; transform:scale(3.2) } }
+.sp-did{ margin-top:26px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.sp-did .k{ color:var(--fg-dim); margin-right:6px; }
+.sp-did span.c{ height:28px; padding:0 12px; display:inline-flex; align-items:center; border-radius:999px; font-size:.78rem; color:var(--fg-2); background:rgba(255,255,255,.05); box-shadow:0 0 0 1px rgba(220,240,255,.12) inset; }
+.live-dot{ position:relative; width:8px; height:8px; border-radius:50%; background:#5cf0a6; box-shadow:0 0 10px #5cf0a6; flex:none; }
+.live-dot::after{ content:''; position:absolute; inset:0; border-radius:50%; background:#5cf0a6; animation: livep 1.8s ease-out infinite; }
+@keyframes livep{ 0%{ transform:scale(1); opacity:.7 } 100%{ transform:scale(3); opacity:0 } }
+.btn.live{ box-shadow: 0 1px 0 rgba(255,255,255,.2) inset, 0 0 0 1px rgba(110,240,180,.4) inset, 0 10px 30px -14px rgba(92,240,166,.5); }
+.btn.live .lv{ font-family:var(--mono); font-size:.58rem; letter-spacing:.18em; color:#9ff5cf; margin-left:2px; }
+@media (max-width:640px){
+  .sp-stats{ grid-template-columns:1fr 1fr; }
+  .sp-stat.hero{ grid-column:1 / -1; }
+  .sp-stat .up{ white-space:nowrap; font-size:.66rem; padding:0 8px; }
+  .sp-axis{ font-size:20px; } .sp-tip{ display:none; }
+  .sp-chart .hd{ font-size:.52rem; }
+  .sp-line, .sp-flow{ stroke-width:5; }
+}
+@media (prefers-reduced-motion: reduce){
+  .sp-line{ stroke-dashoffset:0; } .sp-area,.sp-dot,.sp-tip{ opacity:1; } .sp-dot{ transform:none; }
+  .sheet.open.spark .sp-flow, .sheet.open.spark .sp-now, .live-dot::after{ animation:none; }
+}
+.note{ margin-top:14px; color:var(--fg-dim); font-size:.74rem; }
+
+/* sound toggle */
+.sound{
+  position:fixed; z-index:6; top:max(18px, calc(env(safe-area-inset-top,0px) + 14px)); right:max(18px, env(safe-area-inset-right,0px));
+  height:36px; padding:0 14px 0 12px; border-radius:999px; border:0; cursor:pointer;
+  display:inline-flex; align-items:center; gap:10px; color:var(--fg);
+  font-family:var(--mono); font-size:.58rem; letter-spacing:.2em; text-transform:uppercase;
+  background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
+  box-shadow: 0 1px 0 rgba(255,255,255,.2) inset, 0 0 0 1px rgba(220,240,255,.14) inset, 0 10px 30px -14px rgba(0,0,0,.6);
+  backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%);
+  transition: background .3s var(--liquid);
+}
+.sound:hover, .sound:focus-visible{ background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.06)); outline:none; }
+.sound .bars{ display:inline-flex; gap:2px; align-items:flex-end; height:12px; }
+.sound .bars i{ width:2px; height:3px; border-radius:1px; background:currentColor; opacity:.8; }
+.sound.on .bars i{ animation: eq 1.2s ease-in-out infinite; }
+.sound.on .bars i:nth-child(2){ animation-delay:.2s; } .sound.on .bars i:nth-child(3){ animation-delay:.45s; }
+@keyframes eq{ 0%,100%{ height:3px } 50%{ height:12px } }
+
+/* type passing through water */
+.sub-t{ will-change: transform, opacity, filter; }
+
+@media (prefers-reduced-motion: reduce){
+  .wordmark,.caption,.cue,.gauge,.sheet,#sheetCard,.btn{ transition:none; }
+  .cue i,.gauge .mark.pulse{ animation:none; }
+}
+</style>
+
+<!-- liquid displacement filters used when type passes through water -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="w1" x="-10%" y="-20%" width="120%" height="140%"><feTurbulence id="wt1" type="fractalNoise" baseFrequency="0.006 0.022" numOctaves="2" seed="3"/><feDisplacementMap id="wd1" in="SourceGraphic" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="w2" x="-10%" y="-20%" width="120%" height="140%"><feTurbulence id="wt2" type="fractalNoise" baseFrequency="0.006 0.022" numOctaves="2" seed="7"/><feDisplacementMap id="wd2" in="SourceGraphic" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="w3" x="-10%" y="-20%" width="120%" height="140%"><feTurbulence id="wt3" type="fractalNoise" baseFrequency="0.006 0.022" numOctaves="2" seed="11"/><feDisplacementMap id="wd3" in="SourceGraphic" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>
+</svg>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="grain"></div>
+
+<!-- fold 1 -->
+<div class="layer stage" id="fold1">
+  <div class="sub sub-t" id="fold1Text">
+    <div class="wordmark" id="wordmark">Ashok <em>Sharma</em></div>
+    <div class="caption mono" id="caption">Senior Product Designer &middot; tap the water &middot; drag the glass</div>
+    <div class="cue mono" id="cue"><span>Scroll to dive</span><i></i></div>
+  </div>
+</div>
+
+<!-- fold 2 -->
+<div class="layer bio" id="fold2">
+  <section class="glasscard" id="bioCard" aria-label="About Ashok Sharma">
+    <div class="sub-t" id="bioText">
+      <div class="eyebrow mono">30 ft &middot; The designer</div>
+      <p class="quote">&ldquo;Good design behaves like <em>water</em> — it takes the shape of the person using it.&rdquo;</p>
+      <p class="who"><b>Ashok Sharma</b> is a Senior Product Designer with 5+ years across AI, luxury retail, e-commerce and enterprise platforms. Founding Product Designer at Sparkonomy; previously Senior UX/UI Designer at Art-E Mediatech.</p>
+      <ul class="principles mono">
+        <li>Clarity before cleverness</li>
+        <li>Craft at every depth</li>
+        <li>Make it feel inevitable</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<!-- fold 3 heading -->
+<div class="layer workhead" id="workhead">
+  <div class="sub-t" id="workText">
+    <div class="eyebrow mono">50 ft &middot; Selected work</div>
+    <h2>Five doors <em>in the deep.</em></h2>
+    <p class="mono">Keep diving &middot; step through any door</p>
+  </div>
+</div>
+
+<div id="labels"></div>
+<div id="tags"></div>
+
+<div class="gauge mono" id="gauge" aria-hidden="true">
+  <div class="rail"></div>
+  <div class="mark" id="gMark"></div>
+  <div class="read" id="gRead">5 FT</div>
+  <div class="zone" id="gZone">Sunlit</div>
+</div>
+
+<button class="sound" id="soundBtn" type="button" aria-pressed="false"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span id="soundLbl">Sound off</span></button>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="glasscard" id="sheetCard">
+    <div class="top">
+      <div class="eyebrow mono" id="sheetIdx"></div>
+      <button class="x" id="sheetX" type="button" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div id="sheetLogo"></div>
+    <h3 id="sheetTitle"></h3>
+    <div class="meta mono" id="sheetMeta"></div>
+    <div id="sheetSpark"></div>
+    <div class="std">
+      <p class="lede" id="sheetLede"></p>
+      <h4 class="mono">What I did</h4>
+      <div class="did" id="sheetDid"></div>
+    </div>
+    <div class="std-metrics">
+      <h4 class="mono">Outcomes</h4>
+      <div class="metrics" id="sheetMetrics"></div>
+    </div>
+    <div class="full-only">
+      <h4 class="mono">The project</h4>
+      <div class="story" id="sheetStory"></div>
+    </div>
+    <div class="ctas" id="sheetCtas"></div>
+  </div>
+</div>
+
+<div class="dive" id="dive"></div>
+
+<script>
+// ---------------------------------------------------------------
+// content — edit freely
+// ---------------------------------------------------------------
+const ICON = {
+  spark:  '<path d="M8 1.5v3M8 11.5v3M1.5 8h3M11.5 8h3M3.6 3.6l2 2M10.4 10.4l2 2M12.4 3.6l-2 2M5.6 10.4l-2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>',
+  layers: '<path d="M8 2l6 3.2-6 3.2-6-3.2L8 2z M2 8.4l6 3.2 6-3.2" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/>',
+  card:   '<rect x="2" y="3.5" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M2 6.5h12" stroke="currentColor" stroke-width="1.3"/>',
+  chart:  '<path d="M2.5 13.5V8M6.5 13.5V4.5M10.5 13.5V7M14 13.5H1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>',
+  user:   '<circle cx="8" cy="5.5" r="2.8" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M2.5 14c.8-2.8 3-4.2 5.5-4.2s4.7 1.4 5.5 4.2" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/>',
+  search: '<circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>',
+  pen:    '<path d="M10.5 2.5l3 3-8 8H2.5v-3l8-8z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/>',
+  hand:   '<path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+  bag:    '<path d="M3 5h10l-.8 9H3.8L3 5z M5.5 5V4a2.5 2.5 0 015 0v1" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/>',
+  grid:   '<rect x="2" y="2" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.3" fill="none"/><rect x="9" y="2" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.3" fill="none"/><rect x="2" y="9" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.3" fill="none"/><rect x="9" y="9" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.3" fill="none"/>',
+  phone:  '<rect x="4.5" y="1.5" width="7" height="13" rx="1.8" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M7 12.5h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>',
+  award:  '<circle cx="8" cy="6" r="4" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M5.5 9.3L4.5 14.5 8 12.8l3.5 1.7-1-5.2" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/>'
+};
+const ic = k => `<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">${ICON[k]}</svg>`;
+
+// url:  leave '' to hide "Check product" for that project
+// logo: path to a logo file published with this page (e.g. 'logos/sparkonomy.svg') or a data: URI.
+//       Shown on the door and in the sheet. Until then you can drag an image onto any door to preview it.
+const PROJECTS = [
+  { title:'Sparkonomy', cat:'AI Product Design', role:'Founding Product Designer · Jan 2026 — Present · Sole designer',
+    url:'https://sparkonomy.com',
+    // the Sparkonomy quick view (numbers + growth chart). Only projects with `quick` get this layout.
+    quick:{
+      creators:100, months:3, growth:50, funding:'15M',
+      designed:['Product','UX','UI','Graphics','Motion','SaaS app','Website']
+    },
+    lede:'An AI-powered creator platform that brings a creator’s portfolio, invoicing and earnings into one place. As the only designer, I own the product from discovery through engineering handoff.',
+    did:[['spark','AI-assisted flows'],['user','Creator portfolios'],['card','Invoicing'],['chart','Earnings dashboard'],['grid','Design system'],['search','Discovery & research'],['pen','Prototyping'],['hand','Engineering handoff']],
+    tags:[['spark','AI UX'],['user','Portfolios'],['card','Invoicing'],['chart','Earnings'],['grid','Design system'],['search','Research']],
+    metrics:[['1','Designer — end to end'],['3','Core products: portfolio, invoicing, earnings'],['0 → 1','Built from the first sketch']],
+    story:[['Challenge','Creators run their business across scattered tools — a portfolio here, invoices there, earnings in a spreadsheet.'],
+           ['Approach','Mapped the creator’s whole money-and-work journey, then designed one system across portfolio, invoicing and earnings, with AI doing the busywork.'],
+           ['Outcome','A single home for a creator’s work and income, designed and handed off end to end by one designer.']],
+    a:[0.30,0.85,1.00], b:[0.55,0.35,1.00], shape:'square' },
+  { title:'Ethos Watch Boutique', cat:'Luxury Retail', role:'Senior UX/UI Designer · Art-E Mediatech',
+    url:'https://www.ethoswatches.com',
+    lede:'A mobile flagship for India’s leading luxury watch retailer — translating the feel of a boutique counter into discovery, authentication and white-glove checkout.',
+    did:[['phone','Mobile app'],['search','Product discovery'],['bag','Luxury checkout'],['hand','Authentication flows'],['grid','Design system']],
+    tags:[['phone','Mobile app'],['search','Discovery'],['bag','Checkout'],['chart','₹4Cr+ revenue'],['award','4.6★ rating']],
+    metrics:[['₹4Cr+','Attributed revenue in six months'],['4.6★','App Store rating']],
+    story:[['Challenge','Luxury buyers expect the reassurance of a boutique; a typical shopping app feels transactional.'],
+           ['Approach','Designed discovery, product storytelling and checkout around trust and calm — fewer, better moments.'],
+           ['Outcome','₹4Cr+ attributed revenue within six months and a 4.6★ App Store rating.']],
+    a:[1.00,0.80,0.35], b:[0.95,0.45,0.25], shape:'circle' },
+  { title:'Crompton D2C', cat:'E-commerce', role:'Senior UX/UI Designer · Art-E Mediatech',
+    url:'https://www.crompton.co.in',
+    lede:'A direct-to-consumer storefront and post-purchase experience for a household appliance giant, built to compete with marketplace-native UX.',
+    did:[['bag','D2C storefront'],['grid','Listing & product pages'],['card','Checkout'],['hand','Post-purchase']],
+    tags:[['bag','D2C storefront'],['grid','PLP / PDP'],['card','Checkout'],['award','IMAI Silver'],['award','e4m Bronze']],
+    metrics:[['Silver','IMAI 2024'],['Bronze','e4m Maverick 2024']],
+    story:[['Challenge','Shoppers compare every brand store against marketplaces they already trust.'],
+           ['Approach','Rebuilt the storefront and post-purchase journey to feel as fast and familiar as a marketplace, with the brand intact.'],
+           ['Outcome','Recognised with IMAI 2024 Silver and e4m Maverick 2024 Bronze.']],
+    a:[0.30,0.95,0.70], b:[0.20,0.55,0.95], shape:'square' },
+  { title:'Flipkart Commerce Cloud', cat:'Enterprise SaaS', role:'Senior UX/UI Designer · Art-E Mediatech',
+    url:'',
+    lede:'Enterprise workflows for operators managing catalogue, pricing and fulfilment at scale — dense, data-heavy surfaces made calm.',
+    did:[['grid','Data-dense UI'],['layers','Catalogue tools'],['chart','Pricing workflows'],['user','Operator research']],
+    tags:[['grid','Data-dense UI'],['layers','Catalogue'],['chart','Pricing'],['user','Operators']],
+    metrics:[['Enterprise','Operator-facing tooling at scale']],
+    story:[['Challenge','Operators juggle huge catalogues and pricing decisions in tools built for data, not people.'],
+           ['Approach','Structured dense information into clear, scannable workflows with progressive detail.'],
+           ['Outcome','Calmer, faster operator workflows across catalogue and pricing.']],
+    a:[0.35,0.55,1.00], b:[0.70,0.40,1.00], shape:'circle' },
+  { title:'Style Union', cat:'Fashion E-commerce', role:'Senior UX/UI Designer · Art-E Mediatech',
+    url:'https://styleunion.in',
+    lede:'Browsing, filtering and checkout for a fashion marketplace — balancing editorial merchandising with the speed shoppers expect.',
+    did:[['search','Discovery & filtering'],['layers','Merchandising'],['card','Checkout'],['phone','Mobile web']],
+    tags:[['search','Filtering'],['layers','Merchandising'],['card','Checkout'],['phone','Mobile web']],
+    metrics:[['Fashion','Discovery to checkout']],
+    story:[['Challenge','Fashion shoppers browse like a magazine but buy like a marketplace.'],
+           ['Approach','Paired editorial merchandising with fast, forgiving filters and a short checkout.'],
+           ['Outcome','A storefront that inspires and converts in the same session.']],
+    a:[1.00,0.45,0.75], b:[0.65,0.35,1.00], shape:'square' }
+];
+const rgb = c => c.map(v=> Math.round(v*255)).join(',');
+
+// geometry of the dive (shared by 3D and readouts)
+const DOOR_Y0 = -24, DOOR_STEP = 6.2;
+const CAM_BOTTOM = DOOR_Y0 - (PROJECTS.length-1)*DOOR_STEP;
+const MAX_FT = 130;
+const feetAt = y => Math.round(5 + (-y / -CAM_BOTTOM) * (MAX_FT - 5));
+const ZONES = [[0,'Sunlit'],[30,'Upper reef'],[60,'Twilight reef'],[100,'The deep']];
+
+// ---------- door labels with CTAs ----------
+const labelHost = document.getElementById('labels'), tagHost = document.getElementById('tags');
+const labelEls = PROJECTS.map((p,i)=>{
+  const el = document.createElement('div');
+  el.className = 'dlabel';
+  el.style.setProperty('--pc', rgb(p.a));
+  el.innerHTML = `
+    <div class="n mono">${String(i+1).padStart(2,'0')} &middot; ${feetAt(DOOR_Y0 - i*DOOR_STEP)} ft</div>
+    <div class="t">${p.title}</div>
+    <div class="c mono">${p.cat}</div>
+    <div class="ctas">
+      <button class="btn primary" type="button" data-demo="${i}"><svg viewBox="0 0 16 16" fill="none"><path d="M5 3.5l7 4.5-7 4.5v-9z" fill="currentColor"/></svg>Quick demo</button>
+      ${p.url ? `<a class="btn" href="${p.url}" target="_blank" rel="noopener">Check product<svg viewBox="0 0 16 16" fill="none"><path d="M5 11l6-6M6 5h5v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>` : ''}
+    </div>`;
+  labelHost.appendChild(el);
+  return el;
+});
+const tagEls = PROJECTS.map((p,i)=> p.tags.map(([k,txt])=>{
+  const el = document.createElement('div');
+  el.className = 'tag';
+  el.style.setProperty('--pc', rgb(p.a));
+  el.innerHTML = `${ic(k)}<span>${txt}</span>`;
+  tagHost.appendChild(el);
+  return el;
+}));
+
+// ---------- the sheet ----------
+const doorLogos = [];
+const sheet = document.getElementById('sheet');
+let openIndex = -1;
+let requestEnter = ()=>{}, requestLeave = ()=>{};
+function fillSheet(i){
+  const p = PROJECTS[i];
+  sheet.style.setProperty('--pc', rgb(p.a));
+  document.getElementById('sheetIdx').textContent = 'Quick demo · ' + String(i+1).padStart(2,'0') + ' · ' + p.cat;
+  document.getElementById('sheetLogo').innerHTML = doorLogos[i] ? `<img class="plogo" src="${doorLogos[i]}" alt="${p.title} logo">` : '';
+  document.getElementById('sheetTitle').textContent = p.title;
+  document.getElementById('sheetMeta').textContent = p.role;
+  document.getElementById('sheetLede').textContent = p.lede;
+  document.getElementById('sheetDid').innerHTML = p.did.map(([k,t])=>`<span class="tag">${ic(k)}<span>${t}</span></span>`).join('');
+  document.getElementById('sheetMetrics').innerHTML = p.metrics.map(([b,s])=>`<div class="metric"><b>${b}</b><span>${s}</span></div>`).join('');
+  document.getElementById('sheetStory').innerHTML = p.story.map(([h,t])=>`<div><h5 class="mono">${h}</h5><p>${t}</p></div>`).join('');
+  const q = p.quick;
+  sheet.classList.toggle('spark', !!q);
+  document.getElementById('sheetSpark').innerHTML = q ? sparkView(q) : '';
+  if (q){
+    document.getElementById('sheetMeta').textContent = 'AI creator platform · SaaS';
+    document.getElementById('sheetCtas').innerHTML = `
+      <button class="btn primary" type="button" id="fullBtn">View project in detail<svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      ${p.url ? `<a class="btn live" href="${p.url}" target="_blank" rel="noopener"><span class="live-dot" aria-hidden="true"></span>See live product<span class="lv">LIVE</span></a>` : ''}`;
+    document.getElementById('fullBtn').addEventListener('click', ()=>{
+      const full = sheet.classList.toggle('full');
+      document.getElementById('fullBtn').firstChild.textContent = full ? 'Back to quick view' : 'View project in detail';
+      document.getElementById('sheetIdx').textContent = (full ? 'Full project · ' : 'Quick view · ') + '01 · ' + p.cat;
+    });
+    document.getElementById('sheetIdx').textContent = 'Quick view · 01 · ' + p.cat;
+    return;
+  }
+  document.getElementById('sheetCtas').innerHTML = `
+    <button class="btn primary" type="button" id="fullBtn">See full project<svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    ${p.url ? `<a class="btn" href="${p.url}" target="_blank" rel="noopener">Check product<svg viewBox="0 0 16 16" fill="none"><path d="M5 11l6-6M6 5h5v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>` : ''}`;
+  document.getElementById('fullBtn').addEventListener('click', ()=>{
+    const full = sheet.classList.toggle('full');
+    document.getElementById('fullBtn').firstChild.textContent = full ? 'Show less' : 'See full project';
+    document.getElementById('sheetIdx').textContent = (full ? 'Full project · ' : 'Quick demo · ') + String(i+1).padStart(2,'0') + ' · ' + p.cat;
+  });
+}
+// Sparkonomy quick view: three numbers and a growth curve that draws itself
+function sparkView(q){
+  const W = 600, H = 210, x0 = 18, x1 = 560, yb = 180, yt = 34;
+  const X = t => x0 + (t-1)/(q.months-1)*(x1-x0);
+  const Y = v => yb - v/q.creators*(yb-yt);
+  const r = 1 + q.growth/100, pts = [];
+  for (let t=1; t<=q.months+1e-6; t+=0.05) pts.push([X(t), Y(q.creators*Math.pow(r, t-q.months))]);
+  const line = 'M' + pts.map(p=> p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L');
+  const area = line + ` L${x1} ${yb} L${x0} ${yb} Z`;
+  const dots = Array.from({length:q.months}, (_,k)=>{ const t=k+1, v=q.creators*Math.pow(r,t-q.months); return `<circle class="sp-dot" cx="${X(t).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="6"/>`; }).join('');
+  const ax = Array.from({length:q.months}, (_,k)=> `<text class="sp-axis" x="${X(k+1).toFixed(1)}" y="${yb+24}" text-anchor="middle">MONTH ${k+1}</text>`).join('');
+  const nx = X(q.months), ny = Y(q.creators);
+  return `
+    <p class="sp-sub">The <b>sole designer</b>, taking it from <b>0 → 1</b>.</p>
+    <div class="sp-stats">
+      <div class="sp-stat hero"><div class="v"><span data-count="${q.creators}">${q.creators}</span><small>+</small></div><div class="l">creators in the first ${q.months} months</div></div>
+      <div class="sp-stat"><div class="v"><span data-count="${q.growth}">${q.growth}</span><small>%</small></div><span class="up"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 8.5V1.5M2 4.5l3-3 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>growth every month</span></div>
+      <div class="sp-stat"><div class="v">${q.funding}<small>+</small></div><div class="l">funding raised</div></div>
+    </div>
+    <div class="sp-chart">
+      <div class="hd mono"><span>Creators on Sparkonomy</span><span style="color:#9ff5cf">+${q.growth}% / month</span></div>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Creators grew about ${q.growth}% every month, passing ${q.creators} by month ${q.months}">
+        <defs>
+          <linearGradient id="spStroke" x1="0" x2="1"><stop offset="0" stop-color="rgb(${rgb([0.45,0.62,1.0])})"/><stop offset="1" stop-color="rgb(${rgb([0.40,0.95,0.85])})"/></linearGradient>
+          <linearGradient id="spFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(90,220,230,.28)"/><stop offset="1" stop-color="rgba(90,220,230,0)"/></linearGradient>
+        </defs>
+        <g class="sp-grid"><line x1="${x0}" x2="${x1}" y1="${yt}" y2="${yt}"/><line x1="${x0}" x2="${x1}" y1="${(yt+yb)/2}" y2="${(yt+yb)/2}"/><line x1="${x0}" x2="${x1}" y1="${yb}" y2="${yb}"/></g>
+        <path class="sp-area" d="${area}"/>
+        <path class="sp-line" d="${line}" pathLength="1"/>
+        <path class="sp-flow" d="${line}" pathLength="1"/>
+        <circle class="sp-now" cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="6"/>
+        ${dots}
+        <g class="sp-tip" transform="translate(${(nx-100).toFixed(1)} ${(ny-40).toFixed(1)})"><rect width="76" height="28" rx="14"/><text x="38" y="18.5" text-anchor="middle">${q.creators}+ now</text></g>
+        ${ax}
+      </svg>
+    </div>
+    <div class="sp-did"><span class="k mono">Designed end to end</span>${q.designed.map(d=>`<span class="c">${d}</span>`).join('')}</div>`;
+}
+function countUp(){
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('#sheetSpark [data-count]').forEach((el, k)=>{
+    const to = +el.dataset.count; if (reduce){ el.textContent = to; return; }
+    const t0 = performance.now() + 250 + k*150, dur = 1500;
+    el.textContent = '0';
+    const step = now=>{ const u = Math.min(1, Math.max(0, (now - t0)/dur)); el.textContent = Math.round(to*(1 - Math.pow(1-u, 4))); if (u < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+function openDoor(i){
+  if (openIndex >= 0) return;
+  openIndex = i;
+  fillSheet(i);
+  sheet.classList.remove('full');
+  document.documentElement.classList.add('locked');
+  requestEnter(i);                      // the camera swims into the door first
+  setTimeout(()=>{ sheet.classList.add('open'); countUp(); document.getElementById('sheetX').focus({ preventScroll:true }); }, 620);
+}
+function closeDoor(){
+  if (openIndex < 0) return;
+  sheet.classList.remove('open');
+  document.documentElement.classList.remove('locked');
+  requestLeave();
+  openIndex = -1;
+}
+document.getElementById('sheetX').addEventListener('click', closeDoor);
+sheet.addEventListener('click', e=>{ if (e.target === sheet) closeDoor(); });
+document.addEventListener('keydown', e=>{ if (e.key === 'Escape') closeDoor(); });
+labelHost.addEventListener('click', e=>{ const b = e.target.closest('[data-demo]'); if (b) openDoor(+b.dataset.demo); });
+
+// ---------- gauge ----------
+const gauge = document.getElementById('gauge');
+const ticks = [['Surface',0],['15 ft',15],['30 ft',30],['60 ft',60],['100 ft',100]].map(([txt,ft])=>{
+  const el = document.createElement('div');
+  el.className = 'tick'; el.textContent = txt; el.style.top = (ft/MAX_FT*100) + '%';
+  gauge.appendChild(el); return { el, ft };
+});
+
+let __ready = false;
+function showFallback(){
+  if (__ready) return;
+  document.body.style.background = 'linear-gradient(180deg, #0c1a16 0%, #071422 30%, #040a16 60%, #02040a 100%)';
+  ['wordmark','caption','cue'].forEach(id=> document.getElementById(id).classList.add('show'));
+  document.getElementById('bioCard').style.opacity = 1;
+}
+setTimeout(showFallback, 5000);
+
+(async () => {
+let THREE;
+try { THREE = await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js'); }
+catch(e){ showFallback(); return; }
+
+const canvas = document.getElementById('gl');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const small = Math.min(window.innerWidth, window.innerHeight) < 700;
+
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias:false, alpha:false, powerPreference:'high-performance' }); }
+catch(e){ renderer = null; }
+if (!renderer){ canvas.style.display='none'; showFallback(); return; }
+__ready = true;
+
+const DPR = Math.min(window.devicePixelRatio||1, small ? 1.5 : 2);
+renderer.setPixelRatio(DPR);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NoToneMapping;
+
+const scene = new THREE.Scene();
+const BASE_FOV = 45;
+const camera = new THREE.PerspectiveCamera(BASE_FOV, window.innerWidth/window.innerHeight, 0.1, 46);
+camera.position.set(0, 0, 8);
+
+const bufSize = new THREE.Vector2();
+renderer.getDrawingBufferSize(bufSize);
+const sceneRT = new THREE.WebGLRenderTarget(bufSize.x, bufSize.y, { type: THREE.HalfFloatType, samples: 4 });
+
+{
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const env = new THREE.Scene();
+  env.background = new THREE.Color(0x010201);
+  const panel = (w,h,hex,k,pos)=>{
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({ color:new THREE.Color(hex).multiplyScalar(k), side:THREE.DoubleSide }));
+    m.position.set(pos[0],pos[1],pos[2]); m.lookAt(0,0,0); env.add(m);
+  };
+  panel(6,1.6,0xffffff,3.0,[0,5,2.5]); panel(0.8,5,0xa8f0e0,1.5,[-5,0.5,1.5]); panel(0.8,5,0xc9b8ff,1.2,[5,-0.5,1.5]);
+  panel(4,0.5,0xffffff,0.9,[0,-4.5,3]); panel(1.1,1.1,0xffffff,5.0,[2.5,3,3]);
+  scene.environment = pmrem.fromScene(env, 0.02).texture;
+  pmrem.dispose();
+}
+
+// ---------------------------------------------------------------
+// shared uniforms
+// ---------------------------------------------------------------
+const MAX_RIP = 6;
+const U = {
+  uTime:{ value:0 }, uHover:{ value:0 }, uFlash:{ value:0 }, uDepth:{ value:0 }, uPulse:{ value:0 },
+  uAspect:{ value: window.innerWidth/window.innerHeight },
+  uPtr:{ value: new THREE.Vector3() }, uPtrUV:{ value: new THREE.Vector2(0.5,0.5) },
+  uPx:{ value:1 }, uFocus:{ value:8.0 }, uLogoUV:{ value: new THREE.Vector2(0.5,0.52) },
+  uRip:{ value: Array.from({length:MAX_RIP}, ()=> new THREE.Vector4(0,0,-99,0)) },
+  uRipCol:{ value: Array.from({length:MAX_RIP}, ()=> new THREE.Vector3(0.4,0.8,0.9)) }
+};
+function updatePxScale(){ U.uPx.value = (window.innerHeight * DPR) / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov)/2)); }
+updatePxScale();
+const COL = { cyan:new THREE.Vector3(0.40,0.84,0.92), yellow:new THREE.Vector3(1.00,0.80,0.30), purple:new THREE.Vector3(0.66,0.40,1.00) };
+const ABSORB = 'vec3(2.2, 0.75, 0.28)';
+
+// ---------------------------------------------------------------
+// the water itself
+// ---------------------------------------------------------------
+const bgMat = new THREE.ShaderMaterial({
+  uniforms: U, depthWrite:false, depthTest:false,
+  vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy*2.0,0.0,1.0); }`,
+  fragmentShader:`
+    precision highp float; varying vec2 vUv;
+    uniform float uTime, uHover, uFlash, uAspect, uDepth;
+    uniform vec2 uLogoUV;
+    uniform vec4 uRip[${MAX_RIP}];
+    uniform vec3 uRipCol[${MAX_RIP}];
+    float hash(vec2 p){ p = fract(p*vec2(123.34,456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
+    float noise(vec2 p){ vec2 i=floor(p), f=fract(p); vec2 u=f*f*(3.0-2.0*f);
+      return mix(mix(hash(i),hash(i+vec2(1,0)),u.x), mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x), u.y); }
+    void main(){
+      vec2 uv = vUv;
+      float D = uDepth;
+      vec3 shallow = vec3(0.010,0.020,0.018), blue = vec3(0.005,0.018,0.038), deep = vec3(0.0015,0.005,0.014), abyss = vec3(0.0005,0.0015,0.004);
+      vec3 col = D < 0.25 ? mix(shallow, blue, D/0.25) : (D < 0.6 ? mix(blue, deep, (D-0.25)/0.35) : mix(deep, abyss, (D-0.6)/0.4));
+      float shallowK = 1.0 - smoothstep(0.0, 0.3, D);
+      col += vec3(0.055,0.165,0.150) * exp(-pow(uv.x/0.22, 2.0)) * (0.55 + 0.45*uv.y) * shallowK;
+
+      // the surface overhead: a rippling bright ceiling that rises out of view as you sink
+      float line = 0.84 + D*5.0;
+      float wv = sin(uv.x*uAspect*18.0 + uTime*1.3)*0.006 + sin(uv.x*uAspect*7.0 - uTime*0.8)*0.009 + (noise(vec2(uv.x*uAspect*9.0, uTime*0.6))-0.5)*0.012;
+      float above = smoothstep(line + wv - 0.004, line + wv + 0.012, uv.y);
+      float c1 = noise(vec2(uv.x*uAspect*14.0 + uTime*0.4, uv.y*30.0 - uTime*0.3));
+      float c2 = noise(vec2(uv.x*uAspect*22.0 - uTime*0.35, uv.y*44.0 + uTime*0.25));
+      float caus = pow(1.0 - abs(c1 - c2), 6.0);
+      vec3 sky = vec3(0.10,0.24,0.26) + vec3(0.30,0.52,0.52)*caus;
+      col = mix(col, sky, above * 0.85);
+      float edge = exp(-pow((uv.y - line - wv)/0.006, 2.0));
+      col += vec3(0.45,0.75,0.78) * edge * 0.35 * (1.0 - smoothstep(0.0, 0.08, D));
+      col += vec3(0.04,0.10,0.11) * exp(-pow((uv.y - line)/0.14, 2.0)) * (1.0 - above) * (1.0 - smoothstep(0.0, 0.1, D));
+
+      // faint, cold glow of the surface far overhead from mid-water
+      col += vec3(0.012,0.045,0.085) * smoothstep(0.35, 1.0, uv.y) * smoothstep(0.03, 0.18, D) * (1.0 - smoothstep(0.35, 0.95, D));
+      float w = 0.07 + (1.0-uv.y)*0.28;
+      float beam = exp(-pow((uv.x-0.5)/w, 2.0)) * smoothstep(0.35, 1.0, uv.y);
+      col += vec3(0.10,0.115,0.14) * beam * 0.30 * (0.75 + 0.25*noise(vec2(uv.x*6.0, uTime*0.5))) * (1.0 - smoothstep(0.04, 0.45, D));
+      float gr = pow(0.5+0.5*sin(uv.x*13.0 + uv.y*4.0 + uTime*0.15), 10.0) + pow(0.5+0.5*sin(uv.x*7.0 - uv.y*3.0 - uTime*0.1 + 2.0), 12.0);
+      col += vec3(0.02,0.06,0.10) * gr * smoothstep(0.3,1.0,uv.y) * smoothstep(0.05,0.2,D) * (1.0 - 0.8*smoothstep(0.4,1.0,D)) * 0.6;
+      // suspended water — slow drifting haze you feel at every depth
+      vec2 hq = vec2(uv.x*uAspect, uv.y);
+      float haze = noise(hq*2.2 + vec2(uTime*0.025, -uTime*0.012))*0.6 + noise(hq*5.0 - vec2(uTime*0.04, uTime*0.02))*0.4;
+      col += mix(vec3(0.010,0.030,0.040), vec3(0.005,0.014,0.036), D) * haze * smoothstep(0.08, 0.3, D) * (1.0 - 0.45*smoothstep(0.7, 1.0, D));
+
+      // light breaking through behind the mark on tap — yellow & purple
+      vec2 lq = (uv - uLogoUV) * vec2(uAspect, 1.0);
+      float ld = length(lq), ang = atan(lq.y, lq.x);
+      float wob = noise(vec2(ang*3.0, uTime*0.6))*0.8;
+      float rays = pow(0.5+0.5*sin(ang*9.0 + uTime*0.4 + wob), 5.0)*0.6 + pow(0.5+0.5*sin(ang*5.0 - uTime*0.3 + 1.3 + wob), 6.0)*0.4;
+      float sweep = 0.5 + 0.5*sin(ang*2.0 + uTime*0.9);
+      col += mix(vec3(1.00,0.80,0.32), vec3(0.64,0.40,1.00), sweep) * rays * exp(-ld*3.4) * uFlash * 0.42;
+      vec2 yl = lq - 0.07*vec2(cos(uTime*0.7), sin(uTime*0.7)), pl = lq + 0.07*vec2(cos(uTime*0.7), sin(uTime*0.7));
+      col += vec3(1.00,0.78,0.30) * exp(-dot(yl,yl)*26.0) * uFlash * 0.20;
+      col += vec3(0.62,0.38,1.00) * exp(-dot(pl,pl)*26.0) * uFlash * 0.20;
+
+      for (int i=0; i<${MAX_RIP}; i++){
+        vec4 R = uRip[i];
+        float age = uTime - R.z;
+        if (R.w <= 0.0 || age < 0.0 || age > 3.6) continue;
+        vec2 q = (uv - R.xy) * vec2(uAspect, 1.0);
+        float d = length(q), rr = age * 0.34;
+        float env = pow(1.0 - age/3.6, 1.6) * R.w;
+        float ring = exp(-pow((d-rr)/0.016, 2.0)) + 0.55*exp(-pow((d-rr*0.74)/0.022, 2.0)) + 0.3*exp(-pow((d-rr*0.5)/0.03, 2.0));
+        col += uRipCol[i] * ring * env * 0.42 * (0.7 + 0.3*noise(q*40.0 + uTime));
+        col += uRipCol[i] * exp(-d*d/0.012) * exp(-age*2.6) * R.w * 0.30;
+      }
+      gl_FragColor = vec4(pow(max(col, 0.0), vec3(2.2)), 1.0);
+    }`
+});
+const bg = new THREE.Mesh(new THREE.PlaneGeometry(1,1), bgMat);
+bg.frustumCulled = false; bg.renderOrder = -10;
+scene.add(bg);
+
+// ---------------------------------------------------------------
+// life — points with depth light, glow and running colour
+// aGlow: 0 = lit by daylight, 0..1 = self-luminous strength, 2 = rainbow comb cilia
+// ---------------------------------------------------------------
+const plantVS = `
+  attribute vec3 aColor; attribute float aSize; attribute float aSway; attribute float aPhase; attribute float aGlow;
+  uniform float uTime, uHover, uPx, uFocus, uPush, uSwayAmt, uAspect, uDrift;
+  uniform vec3 uPtr;
+  uniform vec4 uRip[${MAX_RIP}];
+  uniform vec3 uRipCol[${MAX_RIP}];
+  varying vec3 vColor; varying float vAlpha; varying float vCoc; varying vec3 vLight; varying float vGlow; varying float vPhase;
+  void main(){
+    vec3 p = position;
+    float s2 = aSway*aSway, t = uTime;
+    if (uDrift > 0.5){
+      // marine snow: always sinking, carried sideways by a slow current — the water is never still
+      float sp = 0.08 + 0.10*fract(aPhase*3.7);
+      p.y = 7.0 - mod(7.0 - p.y + t*sp, 67.0);
+      p.x += sin(t*0.06 + aPhase)*0.5 + sin(t*0.21 + aPhase*2.3)*0.08;
+      p.z += cos(t*0.05 + aPhase*1.7)*0.3;
+    }
+    p.x += (sin(t*0.55 + aPhase + p.y*0.30)*0.34 + sin(t*1.25 + aPhase*2.0 + p.y*1.05)*0.07) * s2 * uSwayAmt;
+    p.z += cos(t*0.42 + aPhase)*0.16*s2*uSwayAmt;
+    vec4 wp = modelMatrix * vec4(p, 1.0);
+    vec2 dv = wp.xy - uPtr.xy; float d = length(dv);
+    float depthW = 1.0 - clamp(abs(wp.z)/8.0, 0.0, 1.0);
+    wp.xy += dv/(d+0.0001) * uPush * uHover * 0.42 * exp(-d*d/1.3) * depthW * (0.25 + 0.75*aSway);
+    vec4 mv = viewMatrix * wp;
+    vec4 cp = projectionMatrix * mv;
+    vec2 suv = cp.xy/cp.w*0.5 + 0.5;
+    vec3 light = vec3(0.0);
+    for (int i=0; i<${MAX_RIP}; i++){
+      vec4 R = uRip[i];
+      float age = t - R.z;
+      if (R.w <= 0.0 || age < 0.0 || age > 3.6) continue;
+      vec2 q = (suv - R.xy) * vec2(uAspect, 1.0);
+      float dq = length(q);
+      float env = pow(1.0 - age/3.6, 1.4) * R.w;
+      float wv = exp(-pow((dq - age*0.34)/0.045, 2.0)) * env;
+      mv.xy += (q/(dq+0.0001)) * wv * 0.22 * (-mv.z/8.0) * (0.35 + 0.65*aSway);
+      light += uRipCol[i] * wv;
+    }
+    vLight = light;
+    float dist = -mv.z;
+    float coc = clamp(abs(dist - uFocus)/3.8, 0.0, 1.8);
+    float g = min(aGlow, 1.0);
+    float px = aSize * uPx / dist * (1.0 + coc*2.6) * (1.0 + g*0.6);
+    gl_PointSize = clamp(px, 1.0, 150.0);
+    // daylight fades with the point's own depth; luminous life ignores it
+    float dayLight = mix(0.22, 1.0, exp(-max(0.0, -wp.y - 4.0)/14.0));
+    float fog = smoothstep(6.0, 18.0, dist);
+    vec3 lit = aColor * mix(dayLight, 1.0, g);
+    vColor = mix(lit, vec3(0.040,0.110,0.100)*dayLight, fog*0.8*(1.0 - g*0.7));
+    vAlpha = clamp(px, 0.0, 1.0) / (1.0 + coc*coc*3.0) * (1.0 - fog*0.45*(1.0 - g));
+    vCoc = clamp(coc, 0.0, 1.0);
+    vGlow = aGlow; vPhase = aPhase;
+    gl_Position = projectionMatrix * mv;
+  }`;
+const plantFS = `
+  precision highp float;
+  uniform float uAlphaMul, uMinSoft, uTime, uDepth;
+  varying vec3 vColor; varying float vAlpha; varying float vCoc; varying vec3 vLight; varying float vGlow; varying float vPhase;
+  vec3 hue(float h){ return clamp(abs(mod(h*6.0 + vec3(0.0,4.0,2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0); }
+  void main(){
+    vec2 c = gl_PointCoord*2.0 - 1.0;
+    float r2 = dot(c, c);
+    if (r2 > 1.0) discard;
+    float g = min(vGlow, 1.0);
+    float coc = max(max(vCoc, uMinSoft), g*0.55);
+    float a = 1.0 - smoothstep(1.0 - mix(0.40, 1.0, coc), 1.0, sqrt(r2));
+    vec3 base = vColor;
+    if (vGlow > 1.5) base = mix(vec3(0.80,0.90,1.0), hue(fract(uTime*0.55 + vPhase)), 0.30);   // comb-jelly cilia: a faint shimmer
+    vec3 col = base * (0.92 + 0.22*(1.0 - r2)) + vLight * 1.1;
+    vec3 lin = pow(max(col, 0.0), vec3(2.2));
+    if (g > 0.0){
+      float pulse = 0.70 + 0.40*sin(uTime*1.6 + vPhase);
+      lin *= 1.0 + g*1.1*pulse;
+      lin /= mix(vec3(1.0), exp(-uDepth*${ABSORB}), 0.45*g);   // emitted light is partly spared by the water, not entirely
+    }
+    gl_FragColor = vec4(lin, a * vAlpha * uAlphaMul);
+  }`;
+function plantMaterial(opts){
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uTime:U.uTime, uHover:U.uHover, uPtr:U.uPtr, uPx:U.uPx, uFocus:U.uFocus, uAspect:U.uAspect, uRip:U.uRip, uRipCol:U.uRipCol, uDepth:U.uDepth,
+      uPush:{ value: opts.push }, uSwayAmt:{ value: reduceMotion ? 0 : 1 }, uDrift:{ value: opts.drift && !reduceMotion ? 1 : 0 },
+      uAlphaMul: opts.alphaMul || { value: 0.95 }, uMinSoft:{ value: opts.minSoft || 0 }
+    },
+    vertexShader: plantVS, fragmentShader: plantFS,
+    transparent: false, depthWrite: false, depthTest: true,
+    blending: THREE.CustomBlending, blendEquation: THREE.AddEquation,
+    blendSrc: THREE.SrcAlphaFactor, blendDst: opts.additive ? THREE.OneFactor : THREE.OneMinusSrcAlphaFactor
+  });
+}
+
+// ---------------------------------------------------------------
+// building the world
+// ---------------------------------------------------------------
+const rnd = (a,b)=> a + Math.random()*(b-a);
+function gauss(){ let u=0,v=0; while(!u) u=Math.random(); while(!v) v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+const lerp3 = (a,b,t)=> [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
+const mul3 = (a,k)=> [a[0]*k, a[1]*k, a[2]*k];
+const qParam = parseFloat(new URLSearchParams(location.search).get('q'));
+const K = isFinite(qParam) ? qParam : (small ? 0.35 : 1.0);
+const KS = Math.max(K, 0.5);
+const STRIDE = 10;
+
+let B = [];
+function P(x,y,z,c,size,sway,phase,glow){ B.push(x,y,z,c[0],c[1],c[2],size,sway||0,phase||0,glow||0); }
+const rootY = z => -3.55 - Math.max(0,-z)*0.36;
+function sideX(z, minNear){ let x; do { x = rnd(-9.5, 9.5); } while (z > -4.5 && Math.abs(x) < minNear); return x; }
+const yAtFt = ft => -(ft - 5) * (-CAM_BOTTOM) / (MAX_FT - 5);
+const wallZ = (x,y)=> -3.4 + Math.sin(x*0.6 + y*0.2)*0.8 + Math.sin(y*0.45)*0.5;
+function wallSpot(ftLo, ftHi, clearNear){
+  let x, y; do { x = rnd(-11,11); y = rnd(yAtFt(ftHi), yAtFt(ftLo)); } while (clearNear && Math.abs(x) < 2.9);
+  return [x, y, wallZ(x,y) + 0.2];
+}
+
+function packPoints(flat, sortZ){
+  const n = flat.length/STRIDE;
+  const idx = new Uint32Array(n); for (let i=0;i<n;i++) idx[i]=i;
+  if (sortZ) idx.sort((a,b)=> flat[a*STRIDE+2] - flat[b*STRIDE+2]);
+  const pos = new Float32Array(n*3), col = new Float32Array(n*3), size = new Float32Array(n), sway = new Float32Array(n), phase = new Float32Array(n), glow = new Float32Array(n);
+  for (let j=0;j<n;j++){
+    const o = idx[j]*STRIDE;
+    pos[j*3]=flat[o]; pos[j*3+1]=flat[o+1]; pos[j*3+2]=flat[o+2];
+    col[j*3]=flat[o+3]; col[j*3+1]=flat[o+4]; col[j*3+2]=flat[o+5];
+    size[j]=flat[o+6]; sway[j]=flat[o+7]; phase[j]=flat[o+8]; glow[j]=flat[o+9];
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  g.setAttribute('aColor', new THREE.BufferAttribute(col,3));
+  g.setAttribute('aSize', new THREE.BufferAttribute(size,1));
+  g.setAttribute('aSway', new THREE.BufferAttribute(sway,1));
+  g.setAttribute('aPhase', new THREE.BufferAttribute(phase,1));
+  g.setAttribute('aGlow', new THREE.BufferAttribute(glow,1));
+  return g;
+}
+const sharedPlantMat = plantMaterial({ push:1 });
+function flushPoints(order, mat){
+  const pts = new THREE.Points(packPoints(B, true), mat || sharedPlantMat);
+  pts.renderOrder = order; scene.add(pts); B = [];
+  return pts;
+}
+
+// palettes
+const KELP = { root:[0.085,0.08,0.03], mid:[0.34,0.31,0.09], edge:[0.66,0.64,0.22], ruffle:0.22 };
+const LETTUCE = { root:[0.05,0.13,0.05], mid:[0.20,0.46,0.13], edge:[0.46,0.80,0.30], ruffle:0.65 };
+const GRASS_ROOT = [0.05,0.12,0.085], GRASS_TIP = [0.28,0.50,0.28];
+const FAN_BASE = [0.30,0.30,0.52], FAN_TIP = [0.62,0.66,0.92], POLYP = [0.86,0.90,0.98];
+const MOSS = [0.12,0.15,0.06], MOSS_LIT = [0.30,0.33,0.12], SPECK = [0.62,0.62,0.22], LAV = [0.40,0.43,0.68];
+const RED_DARK = [0.26,0.05,0.10], RED_MID = [0.55,0.12,0.22], RED_TIP = [0.86,0.36,0.42];
+const ANEM_BASE = [0.42,0.17,0.20], ANEM_MID = [0.78,0.32,0.40], ANEM_TIP = [1.0,0.78,0.72];
+const ROCK = [0.15,0.19,0.22], ROCK_LIT = [0.30,0.37,0.42], CORALLINE = [0.70,0.34,0.44];
+const FLUO = [[0.40,0.85,0.62],[0.85,0.62,0.42],[0.78,0.52,0.74],[0.50,0.84,0.95]];   // fluorescence seen through blue water: soft, not neon
+
+// ---- shallow species (0–30 ft) ----
+function blade(x, z, H, W, pal, y0In){
+  const y0 = y0In !== undefined ? y0In : rootY(z);
+  const bendX = rnd(-0.9,0.9), bendZ = rnd(-0.5,0.5), freq = rnd(1.4,3.0), ph = rnd(0,6.28);
+  const tw0 = rnd(0,3.14), twR = rnd(-1.8,1.8), phase = rnd(0,6.28);
+  const nearK = Math.min(Math.max(Math.pow(8/(8 - z), 1.8), 0.55), 3.2);
+  for (let i=0, N=Math.round(H*W*2400*K*nearK); i<N; i++){
+    const t = Math.random();
+    const cx = x + Math.sin(t*freq+ph)*bendX*t + bendX*0.35*t*t, cy = y0 + t*H, cz = z + Math.cos(t*freq*0.7+ph)*bendZ*t;
+    const tw = tw0 + twR*t, ux = Math.cos(tw), uz = Math.sin(tw);
+    const ruffle = 1 + pal.ruffle*Math.sin(t*H*9 + ph) + pal.ruffle*0.45*Math.sin(t*H*23 + ph*2);
+    const w = W * Math.pow(Math.sin(Math.PI*Math.min(t*1.12+0.04, 1)), 0.55) * ruffle * (1 - 0.3*t);
+    const s = Math.random()*2 - 1;
+    const wave = Math.sin(s*7 + t*26)*0.012 + pal.ruffle*Math.sin(s*5 + t*H*14)*0.03*Math.abs(s);
+    const facing = Math.abs(Math.cos(tw - 0.7)), edge = Math.abs(s);
+    let c = lerp3(pal.root, pal.mid, Math.min(t*1.7, 1));
+    c = lerp3(c, pal.edge, Math.pow(edge, 3)*0.75*Math.min(t*2,1));
+    if (edge < 0.07) c = mul3(c, 1.3);
+    c = mul3(c, (0.40 + 0.80*facing) * (0.85 + Math.random()*0.3));
+    P(cx + ux*s*w, cy + Math.sin(s*2.5)*0.025*Math.abs(s), cz + uz*s*w + wave, c, rnd(0.015,0.026), t, phase);
+  }
+}
+function feather(x, z, y0In){
+  const y0 = y0In !== undefined ? y0In : rootY(z);
+  const H = rnd(0.6,1.5), lean = rnd(-0.5,0.5), phase = rnd(0,6.28);
+  const stem = t => [x + lean*t*t*H*0.4, y0 + t*H, z];
+  for (let i=0, n=Math.round(H*180*K); i<n; i++){ const t = Math.random(), s = stem(t); P(s[0]+gauss()*0.004, s[1], s[2]+gauss()*0.004, mul3(lerp3(RED_DARK, RED_MID, t), 0.8+Math.random()*0.3), rnd(0.012,0.018), t, phase); }
+  for (let tt=0.06; tt<0.97; tt+=0.04){
+    const base = stem(tt), len = (1-tt)*0.24*H + 0.03;
+    for (const side of [-1,1]){
+      const ang = 0.75 + gauss()*0.08;
+      for (let i=0, n=Math.round(len*280*K); i<n; i++){
+        const f = Math.random();
+        P(base[0] + side*Math.cos(ang)*len*f, base[1] + Math.sin(ang)*len*f - f*f*0.25*len, base[2] + gauss()*0.005, mul3(lerp3(RED_MID, RED_TIP, f), 0.8+Math.random()*0.35), rnd(0.011,0.016), Math.min(tt + f*0.06, 1), phase);
+      }
+    }
+  }
+}
+function fan(x, z, y0In, base, tip, glowTips){
+  const y0 = y0In !== undefined ? y0In : rootY(z), yaw = rnd(-0.6,0.6), phase = rnd(0,6.28), TOT = 3.2;
+  base = base || FAN_BASE; tip = tip || FAN_TIP;
+  function seg(sx, sy, sz, ang, len, depth){
+    const dx = Math.cos(ang)*Math.cos(yaw), dy = Math.sin(ang), dz = Math.cos(ang)*Math.sin(yaw);
+    const ex = sx + dx*len, ey = sy + dy*len, ez = sz + dz*len, thick = 0.006 + depth*0.005;
+    for (let i=0, n=Math.round(len*380*K); i<n; i++){
+      const f = Math.random(), py = sy+dy*len*f + gauss()*thick;
+      P(sx+dx*len*f + gauss()*thick, py, sz+dz*len*f + gauss()*thick, mul3(lerp3(base, tip, 1 - depth/6), 0.7 + Math.random()*0.4), rnd(0.012,0.02), Math.min(Math.max((py - y0)/TOT, 0), 1)*0.8, phase);
+    }
+    if (depth === 0){
+      const hgt = Math.min(Math.max((ey - y0)/TOT, 0), 1);
+      for (let k=0;k<10;k++) P(ex+gauss()*0.02, ey+gauss()*0.02, ez+gauss()*0.02, glowTips ? glowTips : mul3(POLYP, 0.8+Math.random()*0.3), rnd(0.014,0.022), hgt*0.8, phase + k, glowTips ? 0.7 : 0);
+      return;
+    }
+    const spread = rnd(0.28,0.55);
+    seg(ex,ey,ez, ang + spread*rnd(0.6,1.1), len*rnd(0.66,0.8), depth-1);
+    seg(ex,ey,ez, ang - spread*rnd(0.6,1.1), len*rnd(0.66,0.8), depth-1);
+  }
+  seg(x, y0, z, Math.PI/2 + rnd(-0.15,0.15), rnd(0.55,0.8), 6);
+}
+function anemone(x, y, z, R){
+  for (let i=0, n=Math.round(R*R*900*K)+60; i<n; i++){
+    const a = Math.random()*Math.PI*2, h = Math.random();
+    P(x + Math.cos(a)*R*0.45*(1-h*0.2), y + h*R*0.55, z + Math.sin(a)*R*0.45*(1-h*0.2), mul3(ANEM_BASE, 0.7+Math.random()*0.4), rnd(0.012,0.018));
+  }
+  const phase = rnd(0,6.28);
+  for (let j=0;j<44;j++){
+    const a = (j/44)*Math.PI*2 + gauss()*0.08, ring = R*(0.25 + 0.6*Math.sqrt(Math.random()));
+    const len = rnd(0.5,1.0)*R, out = rnd(0.45,1.0);
+    const sx = x + Math.cos(a)*ring*0.5, sy = y + R*0.55, sz = z + Math.sin(a)*ring*0.5;
+    for (let i=0, n=Math.round(len*260*K)+8; i<n; i++){
+      const f = Math.random();
+      P(sx + Math.cos(a)*out*len*f*0.8, sy + len*f*(1 - 0.35*f), sz + Math.sin(a)*out*len*f*0.8, mul3(f > 0.9 ? ANEM_TIP : lerp3(ANEM_BASE, ANEM_MID, f), 0.85+Math.random()*0.3), rnd(0.011,0.017), f*0.55, phase + j*0.35);
+    }
+  }
+}
+function mound(x, y0, z, R, sq, lav){
+  const seed = rnd(0,100);
+  for (let i=0, N=Math.round(R*R*2600*K); i<N; i++){
+    const th = Math.random()*Math.PI*2, el = Math.asin(Math.random());
+    const dx = Math.cos(el)*Math.cos(th), dy = Math.sin(el), dz = Math.cos(el)*Math.sin(th);
+    const bump = 1 + 0.16*Math.sin(dx*7+seed)*Math.sin(dy*6+seed*0.7)*Math.sin(dz*8) + 0.07*Math.sin(dx*19+dz*17+seed);
+    const r = R*bump*(0.96 + Math.random()*0.04), lit = Math.max(0, dy*0.75 - dx*0.35);
+    let c = lerp3(MOSS, MOSS_LIT, lit);
+    const k = Math.random();
+    if (k < 0.07) c = SPECK; else if (lav && k < 0.35) c = LAV;
+    P(x + dx*r, y0 + dy*r*sq, z + dz*r, mul3(c, (0.70 + 1.10*lit) * (0.8 + Math.random()*0.4)), rnd(0.014,0.024));
+  }
+}
+
+// ---- reef species (30 ft and below) ----
+function tubeSponges(x, y, z){
+  const col = [[0.85,0.68,0.20],[0.62,0.30,0.70],[0.90,0.45,0.20]][Math.floor(Math.random()*3)];
+  for (let k=0, n=Math.round(rnd(3,6)); k<n; k++){
+    const ox = gauss()*0.12, oz = gauss()*0.08, H = rnd(0.35,0.95), R = rnd(0.05,0.09), phase = rnd(0,6.28);
+    for (let i=0, N=Math.round(H*R*9000*K)+40; i<N; i++){
+      const a = Math.random()*Math.PI*2, h = Math.random();
+      const lit = 0.55 + 0.45*Math.max(0, Math.cos(a - 2.2));
+      P(x+ox + Math.cos(a)*R*(1+h*0.15), y + h*H, z+oz + Math.sin(a)*R*(1+h*0.15), mul3(col, lit*(0.8+Math.random()*0.3)), rnd(0.012,0.018), h*0.25, phase);
+    }
+  }
+}
+function barrelSponge(x, y, z){
+  const H = rnd(0.5,0.9), R = rnd(0.25,0.4);
+  for (let i=0, N=Math.round(H*R*7000*K)+80; i<N; i++){
+    const a = Math.random()*Math.PI*2, h = Math.random();
+    const r = R*(0.7 + 0.45*Math.sin(h*Math.PI*0.85)) * (1 + 0.05*Math.sin(h*40));
+    P(x + Math.cos(a)*r, y + h*H, z + Math.sin(a)*r, mul3([0.55,0.30,0.25], (0.5 + 0.5*Math.max(0,Math.cos(a-2.2)))*(0.8+Math.random()*0.3)), rnd(0.014,0.02));
+  }
+}
+function plateCoral(x, y, z, R, fluo){
+  const tiers = Math.round(rnd(2,4)), fcol = FLUO[Math.floor(Math.random()*FLUO.length)];
+  for (let k=0;k<tiers;k++){
+    const r0 = R*(1 - k*0.24), ty = y + k*0.09, tilt = rnd(-0.15,0.15);
+    for (let i=0, N=Math.round(r0*r0*3500*K)+60; i<N; i++){
+      const a = Math.random()*Math.PI*2, rr = Math.sqrt(Math.random())*r0;
+      const rim = rr > r0*0.88;
+      const ridge = 0.5 + 0.5*Math.sin(rr*60);
+      let c = mul3([0.32,0.30,0.16], 0.6 + 0.4*ridge);
+      let glow = 0;
+      if (fluo && rim && Math.random() < 0.6){ c = fcol; glow = 0.6; }
+      P(x + Math.cos(a)*rr, ty + Math.sin(a)*rr*tilt - rr*rr*0.15, z + Math.sin(a)*rr*0.55, c, rnd(0.012,0.019), 0, a*2, glow);
+    }
+  }
+}
+function rhodoliths(x, y, z){
+  for (let k=0, n=Math.round(rnd(4,9)); k<n; k++){
+    const cx = x + gauss()*0.35, cz = z + gauss()*0.2, R = rnd(0.05,0.11);
+    for (let i=0, N=Math.round(R*R*20000*K)+20; i<N; i++){
+      const th = Math.random()*Math.PI*2, ph = Math.acos(Math.random()*2-1);
+      const bump = 1 + 0.25*Math.sin(th*5)*Math.sin(ph*4);
+      P(cx + Math.sin(ph)*Math.cos(th)*R*bump, y + R + Math.cos(ph)*R*bump, cz + Math.sin(ph)*Math.sin(th)*R*bump, mul3(CORALLINE, 0.6+Math.random()*0.5), rnd(0.012,0.018));
+    }
+  }
+}
+function fluoCoral(x, y, z){
+  const col = FLUO[Math.floor(Math.random()*FLUO.length)], phase = rnd(0,6.28);
+  function br(sx, sy, sz, dx, dy, dz, len, depth){
+    const ex = sx+dx*len, ey = sy+dy*len, ez = sz+dz*len;
+    for (let i=0, n=Math.round(len*500*K)+6; i<n; i++){
+      const f = Math.random();
+      P(sx+dx*len*f + gauss()*0.008, sy+dy*len*f + gauss()*0.008, sz+dz*len*f + gauss()*0.008, mul3(col, 0.35 + 0.5*(1 - depth/4)), rnd(0.012,0.018), 0.15*(1-depth/4), phase, 0.35 + 0.45*(1 - depth/4));
+    }
+    if (depth === 0){ for (let k=0;k<6;k++) P(ex+gauss()*0.012, ey+gauss()*0.012, ez+gauss()*0.012, col, rnd(0.016,0.024), 0.15, phase + k, 1.0); return; }
+    for (let c=0;c<2;c++){
+      const nx = dx + gauss()*0.5, ny = Math.abs(dy + gauss()*0.3) + 0.3, nz = dz + gauss()*0.5, l = Math.hypot(nx,ny,nz);
+      br(ex,ey,ez, nx/l, ny/l, nz/l, len*rnd(0.65,0.85), depth-1);
+    }
+  }
+  br(x, y, z, 0, 1, 0, rnd(0.15,0.25), 4);
+}
+function whipCoral(x, y, z){
+  const H = rnd(1.0,2.2), bend = rnd(-0.6,0.6), phase = rnd(0,6.28), col = Math.random()<0.5 ? [0.95,0.55,0.25] : [0.85,0.85,0.4];
+  for (let i=0, n=Math.round(H*260*K)+20; i<n; i++){
+    const t = Math.random();
+    const tip = t > 0.85;
+    P(x + bend*t*t*H*0.5 + gauss()*0.005, y + t*H, z + gauss()*0.005, tip ? col : mul3(col, 0.45), rnd(0.012,0.017), t*0.7, phase, tip ? 0.9 : 0.25);
+  }
+}
+function blackCoral(x, y, z){
+  const yaw = rnd(-0.5,0.5), phase = rnd(0,6.28), TOT = 2.4;
+  function seg(sx, sy, sz, ang, len, depth){
+    const dx = Math.cos(ang)*Math.cos(yaw), dy = Math.sin(ang), dz = Math.cos(ang)*Math.sin(yaw);
+    const ex = sx+dx*len, ey = sy+dy*len, ez = sz+dz*len;
+    for (let i=0, n=Math.round(len*420*K)+6; i<n; i++){
+      const f = Math.random(), py = sy+dy*len*f;
+      const polyp = Math.random() < 0.18;
+      const sway = Math.min(Math.max((py - y)/TOT, 0), 1)*0.6;
+      if (polyp) P(sx+dx*len*f + gauss()*0.02, py + gauss()*0.02, sz+dz*len*f + gauss()*0.02, [1.0,0.86,0.62], rnd(0.012,0.018), sway, phase + i*0.3, 0.8);
+      else P(sx+dx*len*f + gauss()*0.006, py + gauss()*0.006, sz+dz*len*f + gauss()*0.006, [0.10,0.09,0.08], rnd(0.012,0.018), sway, phase);
+    }
+    if (depth === 0) return;
+    const spread = rnd(0.25,0.5);
+    seg(ex,ey,ez, ang + spread, len*rnd(0.7,0.82), depth-1);
+    seg(ex,ey,ez, ang - spread, len*rnd(0.7,0.82), depth-1);
+    if (Math.random() < 0.4) seg(ex,ey,ez, ang + rnd(-0.1,0.1), len*0.7, depth-1);
+  }
+  seg(x, y, z, Math.PI/2 + rnd(-0.1,0.1), rnd(0.45,0.65), 6);
+}
+function glassSponge(x, y, z){
+  const H = rnd(0.7,1.3), phase = rnd(0,6.28);
+  for (let i=0, N=Math.round(H*5200*K)+100; i<N; i++){
+    const h = Math.random(), a = Math.random()*Math.PI*2;
+    const onRib = (Math.abs(((a/(Math.PI*2))*14) % 1 - 0.5) > 0.42) || (Math.abs((h*16) % 1 - 0.5) > 0.42);
+    if (!onRib) continue;
+    const r = 0.13 + 0.16*Math.sin(h*Math.PI*0.9) + h*0.06;
+    P(x + Math.cos(a)*r, y + h*H, z + Math.sin(a)*r, [0.80,0.90,0.96], rnd(0.011,0.016), h*0.15, phase + h*6, 0.35);
+  }
+}
+function seaPen(x, y, z){
+  const H = rnd(0.5,0.95), col = Math.random()<0.6 ? [0.35,1.0,0.85] : [0.55,0.75,1.0];
+  for (let i=0, n=Math.round(H*150*K)+20; i<n; i++){ const t = Math.random(); P(x + gauss()*0.004, y + t*H, z, mul3(col, 0.5), rnd(0.012,0.016), t*0.5, -t*7, 0.5); }
+  for (let tt=0.25; tt<0.98; tt+=0.05){
+    const len = (1 - tt)*0.22 + 0.05;
+    for (const side of [-1,1]) for (let i=0, n=Math.round(len*220*K)+3; i<n; i++){
+      const f = Math.random();
+      P(x + side*len*f, y + tt*H + f*len*0.45, z + gauss()*0.004, col, rnd(0.011,0.016), tt*0.5, -tt*7, 0.9);
+    }
+  }
+}
+function combJelly(x, y, z, S){
+  for (let row=0; row<8; row++){
+    const a = (row/8)*Math.PI*2;
+    for (let i=0;i<Math.round(110*Math.max(K,0.6));i++){
+      const v = Math.random()*Math.PI;
+      P(x + Math.sin(v)*Math.cos(a)*S*0.55, y + Math.cos(v)*S, z + Math.sin(v)*Math.sin(a)*S*0.55, [1,1,1], rnd(0.012,0.017), 0.3, v*0.6 + row*0.05, 2);
+    }
+  }
+  for (let i=0;i<Math.round(260*Math.max(K,0.6));i++){
+    const th = Math.random()*Math.PI*2, v = Math.random()*Math.PI;
+    P(x + Math.sin(v)*Math.cos(th)*S*0.5, y + Math.cos(v)*S*0.95, z + Math.sin(v)*Math.sin(th)*S*0.5, [0.6,0.75,0.9], rnd(0.012,0.02), 0.3, 0, 0.12);
+  }
+}
+
+// ===== 0–30 ft: the garden on its ledge =====
+for (let b=0; b<Math.round(32*Math.max(K,0.6)); b++){ const z = rnd(-10, 1.2); blade(sideX(z, 3.1), z, z < -4 ? rnd(4.5, 10) : rnd(2.6, 7.2), rnd(0.15,0.30), KELP); }
+for (let b=0; b<3; b++){ const sgn = b%2 ? 1 : -1; blade(sgn*rnd(3.4,4.6), rnd(2.6,3.6), rnd(3.5,5), rnd(0.2,0.3), KELP); }
+for (let b=0; b<Math.round(12*KS); b++){ const z = rnd(-7, 1.5); blade(sideX(z, 2.8), z, rnd(0.5,1.2), rnd(0.32,0.55), LETTUCE); }
+for (let tf=0; tf<Math.round(22*KS); tf++){
+  const z = rnd(-8, 2), x = sideX(z, 2.6), y0 = rootY(z);
+  for (let s=0, strands=Math.round(rnd(14,30)); s<strands; s++){
+    const H = rnd(0.5,2.1), lean = rnd(-0.6,0.6), leanZ = rnd(-0.3,0.3), ox = gauss()*0.14, oz = gauss()*0.14, phase = rnd(0,6.28);
+    for (let i=0, N=Math.round(H*120*K); i<N; i++){ const t = Math.random(); P(x+ox + lean*t*t*H*0.5 + gauss()*0.004, y0 + t*H, z+oz + leanZ*t*t, mul3(lerp3(GRASS_ROOT, GRASS_TIP, t), 0.75 + Math.random()*0.45), rnd(0.012,0.018), t, phase); }
+  }
+}
+for (let f=0; f<Math.round(14*KS); f++){ const z = rnd(-7.5, 1.5); feather(sideX(z, 2.7), z); }
+for (let f=0; f<Math.round(8*KS); f++){ const z = rnd(-8.5, 0.5); fan(sideX(z, 3.0), z); }
+for (let m=0; m<Math.round(11*KS); m++){
+  const z = rnd(-9, 1.5), x = sideX(z, 2.4), y0 = rootY(z), R = rnd(0.55,1.5), sq = rnd(0.55,0.9);
+  mound(x, y0, z, R, sq, Math.random() < 0.25);
+  const r = Math.random();
+  if (r < 0.4) anemone(x + gauss()*R*0.2, y0 + R*sq*0.92, z, rnd(0.18,0.32));
+  else if (r < 0.65) feather(x + gauss()*R*0.2, z, y0 + R*sq*0.9);
+}
+const PERCHES = [[-4.1,-3.05,0.9],[-2.9,-3.25,1.6],[2.95,-3.2,1.5],[4.2,-2.95,0.7],[-5.0,-2.55,-0.6],[5.2,-2.65,-0.9]];
+const perchTops = PERCHES.map(([x,y,z])=>{ const R = rnd(0.42,0.6); mound(x, y, z, R, 0.6, Math.random()<0.3); return new THREE.Vector3(x, y + R*0.6*0.97, z); });
+for (let i=0, n=Math.round(14000*K); i<n; i++){
+  const x = rnd(-12,12), y = rnd(-6.5,-3.4), z = 3.2 + Math.sin(x*0.8)*0.35 + gauss()*0.12 - (y+3.4)*0.15;
+  P(x, y, z, mul3(lerp3(ROCK, MOSS_LIT, Math.min(Math.max((y+6.5)/3.1, 0), 1)*0.6), 0.6 + Math.random()*0.5), rnd(0.016,0.03));
+}
+flushPoints(-5);
+
+// ===== the reef wall (rock skin, coralline crust patches below 30 ft) =====
+for (let band=0; band<5; band++){
+  const yTop = -6 - band*11, yBot = yTop - 11;
+  for (let i=0, n=Math.round(11*24*44*K); i<n; i++){
+    const x = rnd(-13,13), y = rnd(yBot, yTop), z = wallZ(x,y) + gauss()*0.12;
+    const ledge = Math.max(0, Math.sin(y*0.9 + x*0.15));
+    let c = lerp3(ROCK, ROCK_LIT, Math.min(1, 0.3 + ledge*0.7));
+    const ft = feetAt(y);
+    const crust = ft > 28 && ft < 115 && (Math.sin(x*1.3 + y*0.7) + Math.sin(x*0.4 - y*1.1)) > 1.1;
+    if (crust) c = lerp3(c, CORALLINE, 0.75);
+    P(x, y, z, mul3(c, 0.6 + Math.random()*0.5), rnd(0.03,0.055));
+  }
+  flushPoints(-6);
+}
+
+// ===== 30–60 ft: sea fans, sponges =====
+for (let k=0; k<Math.round(10*KS); k++){ const [x,y,z] = wallSpot(30, 62, true); fan(x, z, y, [0.42,0.22,0.48], [0.80,0.50,0.85]); }
+for (let k=0; k<Math.round(4*KS); k++){ const [x,y,z] = wallSpot(32, 60, true); fan(x, z, y, [0.55,0.30,0.15], [0.95,0.62,0.30]); }
+for (let k=0; k<Math.round(12*KS); k++){ const [x,y,z] = wallSpot(28, 70, true); tubeSponges(x, y, z); }
+for (let k=0; k<Math.round(6*KS); k++){ const [x,y,z] = wallSpot(35, 75, true); barrelSponge(x, y, z); }
+flushPoints(-6);
+
+// ===== 60–100 ft: the twilight reef =====
+for (let k=0; k<Math.round(18*KS); k++){ const [x,y,z] = wallSpot(55, 105, true); plateCoral(x, y, z, rnd(0.35,0.7), feetAt(y) > 62); }
+for (let k=0; k<Math.round(14*KS); k++){ const [x,y,z] = wallSpot(50, 100, true); rhodoliths(x, y, z); }
+for (let k=0; k<Math.round(42*KS); k++){ const [x,y,z] = wallSpot(60, 110, true); fluoCoral(x, y, z); }
+for (let k=0; k<Math.round(18*KS); k++){ const [x,y,z] = wallSpot(65, 125, true); whipCoral(x, y, z); }
+flushPoints(-6);
+
+// ===== 100 ft+: the deep =====
+for (let k=0; k<Math.round(14*KS); k++){ const [x,y,z] = wallSpot(92, 140, true); blackCoral(x, y, z); }
+for (let k=0; k<Math.round(14*KS); k++){ const [x,y,z] = wallSpot(95, 140, true); glassSponge(x, y, z); }
+for (let k=0; k<Math.round(22*KS); k++){ const [x,y,z] = wallSpot(85, 140, true); seaPen(x, y, z); }
+for (let k=0; k<Math.round(7*KS); k++){
+  let x; do { x = rnd(-5.5,5.5); } while (Math.abs(x) < 3.0);
+  combJelly(x, rnd(yAtFt(80), yAtFt(138)), rnd(-1.5, 2.0), rnd(0.12,0.22));
+}
+flushPoints(-6);
+
+// ===== marine snow + deep bioluminescent plankton =====
+// kept back from the lens so none of it swells into big out-of-focus colour discs
+for (let i=0; i<Math.round(11000*K); i++){
+  const c = Math.random()<0.55 ? mul3([0.52,0.58,0.52], 0.5+Math.random()*0.5) : mul3([0.62,0.72,0.84], 0.7+Math.random()*0.3);
+  P(rnd(-11,11), rnd(-60, 7), rnd(-10,2.2), c, rnd(0.008,0.017), 0, rnd(0,6.28));
+}
+flushPoints(-7, plantMaterial({ push:1, drift:true, alphaMul:{ value:0.8 } }));
+for (let i=0; i<Math.round(1500*K); i++){
+  const y = rnd(-60, -16), deepK = Math.min(1, (-y - 16)/30);
+  P(rnd(-10,10), y, rnd(-7,0.5), mul3([0.38,0.74,1.0], 0.6+Math.random()*0.4), rnd(0.007,0.014), 0.3, rnd(0,6.28), 0.2 + 0.35*deepK);
+}
+flushPoints(-6, plantMaterial({ push:1, additive:true, alphaMul:{ value:0.6 } }));
+
+// ---------------------------------------------------------------
+// bubbles — they stream up past the lens as you sink
+// ---------------------------------------------------------------
+const BUB_N = 180;
+const bubPos = new Float32Array(BUB_N*3), bubSize = new Float32Array(BUB_N), bubLife = new Float32Array(BUB_N);
+const bubVel = new Float32Array(BUB_N), bubSeed = new Float32Array(BUB_N);
+for (let i=0;i<BUB_N;i++){ bubLife[i] = 0; bubPos[i*3+1] = 999; }
+const bubGeo = new THREE.BufferGeometry();
+bubGeo.setAttribute('position', new THREE.BufferAttribute(bubPos,3));
+bubGeo.setAttribute('aSize', new THREE.BufferAttribute(bubSize,1));
+const bubMat = new THREE.ShaderMaterial({
+  uniforms: { uPx:U.uPx, uDepth:U.uDepth },
+  vertexShader:`attribute float aSize; uniform float uPx; varying float vA;
+    void main(){ vec4 mv = modelViewMatrix*vec4(position,1.0); float d = -mv.z; gl_PointSize = clamp(aSize*uPx/d, 1.0, 120.0); vA = smoothstep(0.6, 2.0, d); gl_Position = projectionMatrix*mv; }`,
+  fragmentShader:`precision highp float; varying float vA; uniform float uDepth;
+    void main(){
+      vec2 c = gl_PointCoord*2.0-1.0; float r = length(c); if (r > 1.0) discard;
+      float rim = smoothstep(0.62, 0.92, r) * (1.0 - smoothstep(0.92, 1.0, r));
+      float spec = 1.0 - smoothstep(0.0, 0.22, length(c - vec2(-0.32,-0.36)));
+      vec3 col = vec3(0.70,0.90,1.0) * (rim*0.55 + spec*0.9) + vec3(0.2,0.35,0.45)*0.06;
+      col = pow(col, vec3(2.2)) / mix(vec3(1.0), exp(-uDepth*${ABSORB}), 0.6);
+      gl_FragColor = vec4(col, (rim*0.8 + spec)*vA);
+    }`,
+  transparent:false, depthWrite:false, blending:THREE.AdditiveBlending
+});
+const bubbles = new THREE.Points(bubGeo, bubMat);
+bubbles.frustumCulled = false; bubbles.renderOrder = -2;
+scene.add(bubbles);
+let bubHead = 0;
+function spawnBubble(camY){
+  const i = bubHead; bubHead = (bubHead+1) % BUB_N;
+  const near = Math.random() < 0.45;
+  bubPos[i*3]   = near ? rnd(-1.6,1.6) : rnd(-4.5,4.5);
+  bubPos[i*3+1] = camY - (near ? rnd(1.6,2.6) : rnd(3.0,4.5));
+  bubPos[i*3+2] = near ? rnd(3.8,6.2) : rnd(-1.5,3.0);
+  bubSize[i] = near ? rnd(0.035,0.12) : rnd(0.02,0.06);
+  bubVel[i] = rnd(1.4, 2.6) * (0.8 + bubSize[i]*4);
+  bubSeed[i] = Math.random()*10;
+  bubLife[i] = 1;
+}
+
+// ---------------------------------------------------------------
+// starfish
+// ---------------------------------------------------------------
+const STAR_PAL = [{ body:[0.86,0.36,0.17], bump:[1.0,0.68,0.40] }, { body:[0.55,0.24,0.62], bump:[0.90,0.62,0.95] }, { body:[0.90,0.52,0.20], bump:[1.0,0.85,0.55] }];
+function starGeometry(R, pal){
+  B = [];
+  for (let i=0, N=Math.round(2600*Math.max(K,0.6)); i<N; i++){
+    const th = Math.random()*Math.PI*2;
+    const rmax = R*(0.30 + 0.70*Math.pow(Math.abs(Math.cos(th*2.5)), 2.2));
+    const r = Math.sqrt(Math.random())*rmax, rn = r/(rmax+1e-6);
+    const tuber = Math.random() < 0.16;
+    P(Math.cos(th)*r, Math.sin(th)*r, (1 - rn*rn)*0.07*R/0.3 + gauss()*0.004, mul3(tuber ? pal.bump : pal.body, (0.55 + 0.6*(1 - rn))*(0.85+Math.random()*0.3)), tuber ? rnd(0.016,0.022) : rnd(0.012,0.018));
+  }
+  const g = packPoints(B, false); B = []; return g;
+}
+const starMat = plantMaterial({ push:0 });
+const starfish = [0,2,3].map((perch, i)=>{
+  const pts = new THREE.Points(starGeometry(rnd(0.24,0.32), STAR_PAL[i]), starMat);
+  pts.renderOrder = -4; pts.rotation.x = -1.15; pts.rotation.z = rnd(0, Math.PI*2);
+  const g = new THREE.Group(); g.add(pts); g.position.copy(perchTops[perch]); scene.add(g);
+  return { g, pts, perch, from:new THREE.Vector3(), to:new THREE.Vector3(), t:1, delay:0, spin0:0, spin1:0 };
+});
+
+// ---------------------------------------------------------------
+// the mark — floating, no backdrop of its own; flares only on tap
+// ---------------------------------------------------------------
+const glowMat = new THREE.ShaderMaterial({
+  uniforms: U, depthWrite:false, transparent:false, blending: THREE.AdditiveBlending,
+  vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader:`
+    precision highp float; varying vec2 vUv; uniform float uFlash, uTime;
+    void main(){
+      vec2 c = vUv - 0.5;
+      vec2 o = 0.09*vec2(cos(uTime*0.8), sin(uTime*0.8));
+      vec3 col = vec3(1.00,0.78,0.30) * exp(-dot(c-o,c-o)*40.0) * uFlash * 0.30;
+      col += vec3(0.62,0.38,1.00) * exp(-dot(c+o,c+o)*40.0) * uFlash * 0.30;
+      gl_FragColor = vec4(pow(col, vec3(2.2)), 1.0);
+    }`
+});
+const glow = new THREE.Mesh(new THREE.PlaneGeometry(5.5,5.5), glowMat);
+glow.position.z = -1.2; glow.renderOrder = -3; scene.add(glow);
+
+const glass = new THREE.MeshPhysicalMaterial({
+  color: 0xffffff, metalness: 0, roughness: 0.0, transmission: 1, thickness: 1.1, ior: 1.52, dispersion: 0.4,
+  clearcoat: 1, clearcoatRoughness: 0.0, iridescence: 0.16, iridescenceIOR: 1.3, iridescenceThicknessRange: [200, 500],
+  attenuationColor: new THREE.Color(0xe6f5ff), attenuationDistance: 2.6, envMapIntensity: 1.9, specularIntensity: 1
+});
+const buoy = new THREE.Group();            // rocks gently, like something floating
+const logo = new THREE.Group();            // the user's rotation lives here
+buoy.add(logo);
+const RING_R = 0.86, RING_T = 0.092, STROKE = 0.064;
+logo.add(new THREE.Mesh(new THREE.TorusGeometry(RING_R, RING_T, 64, 280), glass));
+const orbit = new THREE.Mesh(new THREE.TorusGeometry(1.09, 0.012, 16, 300), glass);
+orbit.rotation.set(1.25, 0.35, 0); logo.add(orbit);
+const letters = new THREE.Group();
+const capG = new THREE.SphereGeometry(STROKE, 40, 22);
+function cap(x,y){ const m = new THREE.Mesh(capG, glass); m.position.set(x,y,0); letters.add(m); }
+const bowl = new THREE.Mesh(new THREE.TorusGeometry(0.26, STROKE, 48, 200), glass);
+bowl.position.set(-0.24, 0, 0); letters.add(bowl);
+letters.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(0.02,0.27,0), new THREE.Vector3(0.02,-0.30,0)), 30, STROKE, 40, false), glass));
+cap(0.02,0.27); cap(0.02,-0.30);
+{
+  const cx = 0.37, r = 0.135, pts = [];
+  for (let k=0;k<=60;k++){ const a = THREE.MathUtils.degToRad(25 + 245*k/60); pts.push(new THREE.Vector3(cx + r*Math.cos(a), r + r*Math.sin(a), 0)); }
+  for (let k=1;k<=60;k++){ const a = THREE.MathUtils.degToRad(90 - 245*k/60); pts.push(new THREE.Vector3(cx + r*Math.cos(a), -r + r*Math.sin(a), 0)); }
+  letters.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 260, STROKE, 40, false), glass));
+  cap(pts[0].x, pts[0].y); cap(pts[pts.length-1].x, pts[pts.length-1].y);
+}
+letters.position.x = -0.065;
+const LS = 1.08;
+letters.scale.setScalar(LS);
+logo.add(letters);
+buoy.position.set(0, 0.12, 0);
+logo.scale.setScalar(0.001);
+scene.add(buoy);
+
+const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(2, 3.5, 4); scene.add(key);
+const rimA = new THREE.PointLight(0x9be7ff, 9, 8, 2); rimA.position.set(-2, 1, 2); scene.add(rimA);
+const rimB = new THREE.PointLight(0xb08bff, 8, 8, 2); rimB.position.set(2, -1, 2); scene.add(rimB);
+const glint = new THREE.PointLight(0xffffff, 6, 4, 2); scene.add(glint);
+const flashY = new THREE.PointLight(0xffc850, 0, 5, 2); flashY.position.set(-0.6, 0.4, -0.8); scene.add(flashY);
+const flashP = new THREE.PointLight(0xa060ff, 0, 5, 2); flashP.position.set(0.6, -0.2, -0.8); scene.add(flashP);
+
+// ---------------------------------------------------------------
+// the five doors
+// ---------------------------------------------------------------
+function rrShape(w, h, r, path){
+  const s = path ? new THREE.Path() : new THREE.Shape(), x = -w/2, y = -h/2;
+  s.moveTo(x+r, y); s.lineTo(x+w-r, y); s.quadraticCurveTo(x+w, y, x+w, y+r);
+  s.lineTo(x+w, y+h-r); s.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  s.lineTo(x+r, y+h); s.quadraticCurveTo(x, y+h, x, y+h-r);
+  s.lineTo(x, y+r); s.quadraticCurveTo(x, y, x+r, y);
+  return s;
+}
+const doorGlass = glass.clone(); doorGlass.thickness = 0.8; doorGlass.dispersion = 0.5; doorGlass.envMapIntensity = 2.2;
+const membraneVS = `uniform vec2 uSize; varying vec2 vUv; void main(){ vUv = position.xy/uSize + 0.5; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`;
+const membraneFS = `
+  precision highp float; varying vec2 vUv;
+  uniform float uTime, uHover, uDepth; uniform vec3 uA, uB; uniform float uSeed;
+  float hash(vec2 p){ p = fract(p*vec2(123.34,456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
+  float noise(vec2 p){ vec2 i=floor(p), f=fract(p); vec2 u=f*f*f*(f*(f*6.0-15.0)+10.0); return mix(mix(hash(i),hash(i+vec2(1,0)),u.x), mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x), u.y); }
+  float fbm(vec2 p){ return 0.55*noise(p) + 0.28*noise(p*2.03 + 7.1) + 0.17*noise(p*4.01 + 3.7); }
+  void main(){
+    vec2 p = vUv - 0.5; float r = length(p);
+    float t = uTime*0.12 + uSeed;
+    vec2 q = p*1.8;
+    q += 0.7*vec2(fbm(q*1.1 + t), fbm(q*1.1 - t + 4.0));
+    float n = fbm(q*1.6 + t*0.7);
+    vec3 col = mix(uA, uB, smoothstep(0.25, 0.75, n));
+    col *= 0.14 + 0.42*exp(-r*r*5.0) + 0.22*n;
+    // caustic light moving across the far side of the door — water, not paint
+    float k1 = noise(q*5.5 + t*2.0), k2 = noise(q*5.5 - t*1.7 + 3.0);
+    col += vec3(0.55,0.75,0.95) * pow(1.0 - abs(k1 - k2), 10.0) * 0.10;
+    col += vec3(1.0) * exp(-r*r*40.0) * (0.06 + 0.22*uHover);
+    float l = dot(col, vec3(0.30, 0.59, 0.11));
+    col = mix(col, vec3(l), 0.28);
+    col *= 0.75 + 0.6*uHover;
+    col = pow(col, vec3(2.2));
+    col /= mix(vec3(1.0), exp(-uDepth*${ABSORB}), 0.4);
+    gl_FragColor = vec4(col, 1.0);
+  }`;
+const doors = [], membranes = [];
+PROJECTS.forEach((p, i)=>{
+  const g = new THREE.Group();
+  let frameGeo, memGeo, size;
+  if (p.shape === 'circle'){
+    frameGeo = new THREE.TorusGeometry(0.92, 0.075, 48, 220);
+    memGeo = new THREE.CircleGeometry(0.88, 96);
+    size = new THREE.Vector2(1.76, 1.76);
+  } else {
+    const outer = rrShape(1.6, 2.0, 0.42); outer.holes.push(rrShape(1.42, 1.82, 0.34, true));
+    frameGeo = new THREE.ExtrudeGeometry(outer, { depth:0.08, bevelEnabled:true, bevelThickness:0.04, bevelSize:0.035, bevelSegments:6, curveSegments:24 });
+    frameGeo.translate(0,0,-0.04);
+    memGeo = new THREE.ShapeGeometry(rrShape(1.44, 1.84, 0.35), 24);
+    size = new THREE.Vector2(1.44, 1.84);
+  }
+  const memMat = new THREE.ShaderMaterial({
+    uniforms: { uTime:U.uTime, uDepth:U.uDepth, uHover:{ value:0 }, uA:{ value:new THREE.Vector3(...p.a) }, uB:{ value:new THREE.Vector3(...p.b) }, uSeed:{ value:i*7.3 }, uSize:{ value:size } },
+    vertexShader: membraneVS, fragmentShader: membraneFS
+  });
+  const membrane = new THREE.Mesh(memGeo, memMat);
+  membrane.position.z = -0.06; membrane.userData.index = i;
+  g.add(membrane, new THREE.Mesh(frameGeo, doorGlass));
+  // the logo slot — sits inside the door, in front of its light
+  const logoPlane = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({ transparent:true, depthWrite:false, opacity:0.95 }));
+  logoPlane.position.z = -0.02; logoPlane.renderOrder = 2; logoPlane.visible = false;
+  g.add(logoPlane);
+  const spill = new THREE.PointLight(new THREE.Color(...p.a), 3, 4.5, 2); spill.position.set(0,0,0.8); g.add(spill);
+  scene.add(g);
+  const circle = p.shape === 'circle';
+  doors.push({ g, memMat, spill, logoPlane, hover:0, base:new THREE.Vector3(), side:1, narrow:false, hw: circle ? 0.95 : 0.82, hh: circle ? 0.95 : 1.02 });
+  membranes.push(membrane);
+});
+const texLoader = new THREE.TextureLoader();
+function setDoorLogo(i, src){
+  texLoader.load(src, tex=>{
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const d = doors[i], ar = tex.image.width / Math.max(1, tex.image.height);
+    const maxW = d.hw*1.1, maxH = d.hh*0.7;
+    let w = maxW, h = w/ar; if (h > maxH){ h = maxH; w = h*ar; }
+    d.logoPlane.scale.set(w, h, 1);
+    d.logoPlane.material.map = tex; d.logoPlane.material.needsUpdate = true;
+    d.logoPlane.visible = true;
+    doorLogos[i] = src;
+  });
+}
+PROJECTS.forEach((p, i)=>{
+  let saved = null; try { saved = localStorage.getItem('doorLogo:'+i); } catch(_){}
+  if (p.logo) setDoorLogo(i, p.logo); else if (saved) setDoorLogo(i, saved);
+});
+// drop an image onto a door to preview it as that project's logo (kept in this browser only)
+canvas.addEventListener('dragover', e=>{ e.preventDefault(); });
+canvas.addEventListener('drop', e=>{
+  e.preventDefault();
+  const f = e.dataTransfer && e.dataTransfer.files[0];
+  if (!f || !f.type.startsWith('image/')) return;
+  setPointer(e.clientX, e.clientY);
+  const i = pickDoor(); if (i < 0) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{ setDoorLogo(i, rd.result); try { localStorage.setItem('doorLogo:'+i, rd.result); } catch(_){} };
+  rd.readAsDataURL(f);
+});
+function layoutDoors(){
+  const narrow = camera.aspect < 0.85;
+  doors.forEach((d, i)=>{
+    d.side = i%2 ? 1 : -1;
+    d.base.set(narrow ? 0 : d.side*1.75, DOOR_Y0 - i*DOOR_STEP, narrow ? 0 : 0.4);
+    d.g.scale.setScalar(narrow ? 0.85 : 1);
+    d.narrow = narrow;
+  });
+}
+layoutDoors();
+
+// ---------------------------------------------------------------
+// jellyfish
+// ---------------------------------------------------------------
+const bellMat = glass.clone(); bellMat.iridescence = 0.6; bellMat.thickness = 0.5; bellMat.dispersion = 0.6;
+bellMat.emissive = new THREE.Color(0x7fb8d8); bellMat.emissiveIntensity = 0.16;
+const deepBellMat = bellMat.clone(); deepBellMat.emissive = new THREE.Color(0x6fd0ff); deepBellMat.emissiveIntensity = 0.9;
+const bellGeo = new THREE.SphereGeometry(0.30, 48, 24, 0, Math.PI*2, 0, Math.PI*0.5);
+const TENT = 8, SEG = 28;
+function inClearing(v){ return Math.hypot(v.x/2.5, (v.y-0.1)/2.0) < 1; }
+function freeSpot(awayFrom, bandY, bandH){
+  let best = null, bestD = -1;
+  for (let k=0;k<16;k++){
+    const v = new THREE.Vector3(rnd(-4.8,4.8), bandY + rnd(-bandH, bandH), rnd(-4.2,-0.8));
+    if (bandY > -6 && inClearing(v)) continue;
+    const d = awayFrom ? v.distanceTo(awayFrom) : Math.random();
+    if (d > bestD){ bestD = d; best = v; }
+  }
+  return best || new THREE.Vector3(-3.6, bandY, -1.6);
+}
+const jellies = [
+  { home:[-3.9, 2.35,-1.6], s:1.0,  band:[1.0,1.6], deep:false },
+  { home:[ 3.7, 1.9,-2.6],  s:0.8,  band:[1.0,1.6], deep:false },
+  { home:[ 2.9,-0.9,-3.4],  s:0.62, band:[1.0,1.6], deep:false },
+  { home:[-3.4,-19,-1.8],   s:0.9,  band:[-19,3],   deep:true },
+  { home:[ 3.6,-41,-2.2],   s:1.1,  band:[-41,4],   deep:true }
+].map(({home, s, band, deep})=>{
+  const g = new THREE.Group();
+  const bell = new THREE.Mesh(bellGeo, deep ? deepBellMat : bellMat); g.add(bell);
+  const tents = [];
+  for (let j=0;j<TENT;j++){
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(SEG*3), 3));
+    const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: deep ? 0x8fdcff : 0xd8ecff, transparent:true, opacity: deep ? 0.55 : 0.3 }));
+    g.add(line); tents.push(line);
+  }
+  if (deep){ const l = new THREE.PointLight(0x5fc8ff, 4, 4, 2); g.add(l); }
+  g.scale.setScalar(s); g.position.set(...home); scene.add(g);
+  return { g, bell, tents, pos:g.position, vel:new THREE.Vector3(), target:new THREE.Vector3(...home), phase:rnd(0,6.28), kick:0, idle:rnd(4,9), band };
+});
+const UPV = new THREE.Vector3(0,1,0), qJ = new THREE.Quaternion(), vTmp = new THREE.Vector3(), vLoc = new THREE.Vector3();
+
+// ---------------------------------------------------------------
+// final pass — water lens, pressure, absorption
+// ---------------------------------------------------------------
+const postMat = new THREE.ShaderMaterial({
+  uniforms: { tScene:{ value: sceneRT.texture }, uTime:U.uTime, uAspect:U.uAspect, uHover:U.uHover, uPtrUV:U.uPtrUV, uRip:U.uRip, uRipCol:U.uRipCol, uDepth:U.uDepth, uPulse:U.uPulse, uCalm:{ value: reduceMotion ? 0 : 1 } },
+  depthTest:false, depthWrite:false,
+  vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.0,1.0); }`,
+  fragmentShader:`
+    precision highp float; varying vec2 vUv;
+    uniform sampler2D tScene; uniform float uTime, uAspect, uHover, uCalm, uDepth, uPulse;
+    uniform vec2 uPtrUV; uniform vec4 uRip[${MAX_RIP}]; uniform vec3 uRipCol[${MAX_RIP}];
+    void main(){
+      vec2 uv = vUv, asp = vec2(uAspect, 1.0), off = vec2(0.0);
+      vec3 tint = vec3(0.0);
+      for (int i=0; i<${MAX_RIP}; i++){
+        vec4 R = uRip[i];
+        float age = uTime - R.z;
+        if (R.w <= 0.0 || age < 0.0 || age > 3.6) continue;
+        vec2 q = (uv - R.xy) * asp; float d = length(q); vec2 dir = q/(d + 0.0001);
+        float env = pow(1.0 - age/3.6, 1.5) * R.w;
+        float x1 = (d - age*0.34)/0.040, x2 = (d - age*0.34*0.74)/0.032, x3 = (d - age*0.34*0.50)/0.028;
+        float lens = -x1*exp(-x1*x1) + 0.55*(-x2*exp(-x2*x2)) + 0.3*(-x3*exp(-x3*x3));
+        off += dir/asp * lens * env * 0.020;
+        tint += uRipCol[i] * exp(-x1*x1) * env;
+      }
+      vec2 pq = (uv - uPtrUV) * asp;
+      off += -(pq/asp) * exp(-dot(pq,pq)/0.010) * 0.10 * uHover;
+      off += uCalm * vec2(sin(uv.y*22.0 + uTime*0.9) * 0.0007, cos(uv.x*17.0 + uTime*0.75) * 0.0007);
+      // pressure: at each depth mark the frame squeezes in and springs back
+      vec2 cq = uv - 0.5;
+      off += cq * uPulse * 0.045 * sin(uPulse*3.14159);
+      float bend = length(off); vec2 cd = off/(bend + 0.00001); float ca = bend*0.45 + 0.0004 + uPulse*0.002;
+      vec3 col;
+      col.r = texture2D(tScene, uv + off + cd*ca).r;
+      col.g = texture2D(tScene, uv + off).g;
+      col.b = texture2D(tScene, uv + off - cd*ca).b;
+      col += pow(tint, vec3(2.2)) * 0.05;
+      col *= mix(vec3(1.0), exp(-uDepth * ${ABSORB}), 0.8);
+      // the deeper you go, the more everything is graded into the one colour the water lets through
+      float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
+      col = mix(col, lum * vec3(0.55, 0.88, 1.18), smoothstep(0.2, 0.9, uDepth) * 0.6);
+      // the tunnel tightens with depth and on each pressure pulse
+      vec2 vq = cq * vec2(1.0, 1.15);
+      col *= 1.0 - smoothstep(0.45 - uDepth*0.08 - uPulse*0.06, 0.95, length(vq)) * (0.45 + 0.25*uDepth + 0.15*uPulse);
+      gl_FragColor = vec4(col, 1.0);
+      #include <colorspace_fragment>
+    }`
+});
+const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const postQuad = new THREE.Mesh(new THREE.PlaneGeometry(2,2), postMat); postQuad.frustumCulled = false; postScene.add(postQuad);
+
+// ---------------------------------------------------------------
+// interaction
+// ---------------------------------------------------------------
+let hoverTarget = 0, ripIdx = 0, press = 0, openCol = 0, hoveredDoor = -1;
+const ndc = new THREE.Vector2(), ray = new THREE.Raycaster(), plane0 = new THREE.Plane(new THREE.Vector3(0,0,1), 0);
+const ptrTarget = new THREE.Vector3(), ptrUVTarget = new THREE.Vector2(0.5,0.5);
+let mx = 0, my = 0, dragging = false, lastX = 0, lastY = 0, velX = 0, velY = 0, downX = 0, downY = 0, downT = 0, downDoor = -1;
+const SENS = 0.011, qTmp = new THREE.Quaternion(), AX = new THREE.Vector3(1,0,0), AY = new THREE.Vector3(0,1,0);
+const tmpV = new THREE.Vector3(), camLocal = new THREE.Vector3(), upLocal = new THREE.Vector3(), qInv = new THREE.Quaternion(), qWorld = new THREE.Quaternion();
+let letterPhi = 0;
+
+function rotateBy(dx, dy){
+  qTmp.setFromAxisAngle(AY, dx*SENS); logo.quaternion.premultiply(qTmp);
+  qTmp.setFromAxisAngle(AX, dy*SENS); logo.quaternion.premultiply(qTmp);
+}
+function setPointer(x, y){
+  mx = (x/window.innerWidth)*2 - 1; my = -(y/window.innerHeight)*2 + 1;
+  ptrUVTarget.set(x/window.innerWidth, 1 - y/window.innerHeight);
+  ndc.set(mx, my); ray.setFromCamera(ndc, camera); ray.ray.intersectPlane(plane0, ptrTarget);
+}
+function pickDoor(){
+  ray.setFromCamera(ndc, camera);
+  const hit = ray.intersectObjects(membranes, false)[0];
+  return hit ? hit.object.userData.index : -1;
+}
+function addRipple(u, v, startOffset, strength, colVec){
+  U.uRip.value[ripIdx].set(u, v, U.uTime.value + startOffset, strength);
+  U.uRipCol.value[ripIdx].copy(colVec);
+  ripIdx = (ripIdx+1) % MAX_RIP;
+}
+function touchWater(x, y){
+  const u = x/window.innerWidth, v = 1 - y/window.innerHeight;
+  const onLogo = Math.hypot((u - U.uLogoUV.value.x)*U.uAspect.value, v - U.uLogoUV.value.y) < 0.16 && U.uDepth.value < 0.08;
+  if (onLogo){ addRipple(u, v, 0.0, 1.25, COL.yellow); addRipple(u, v, 0.22, 1.1, COL.purple); U.uFlash.value = 1.0; press = 1; }
+  else {
+    const c = downDoor >= 0 ? new THREE.Vector3(...PROJECTS[downDoor].a) : [COL.cyan, COL.yellow, COL.purple][openCol++ % 3];
+    addRipple(u, v, 0.0, 1.0, c);
+    U.uFlash.value = Math.max(U.uFlash.value, U.uDepth.value < 0.08 ? 0.25 : 0);
+  }
+  sfx.tap(onLogo); buzz(onLogo ? 14 : 8);
+}
+function startle(){
+  const at = ptrTarget.clone();
+  jellies.forEach(j=>{ j.kick = 1; j.target.copy(freeSpot(at, j.band[0], j.band[1])); });
+  if (U.uDepth.value > 0.12) return;
+  const taken = new Set(starfish.map(s=>s.perch));
+  starfish.forEach((s, i)=>{
+    const options = PERCHES.map((_,k)=>k).filter(k=> !taken.has(k));
+    if (!options.length) return;
+    const next = options[Math.floor(Math.random()*options.length)];
+    taken.delete(s.perch); taken.add(next);
+    s.from.copy(s.g.position); s.to.copy(perchTops[next]); s.perch = next;
+    s.t = 0; s.delay = i*0.14; s.spin0 = s.pts.rotation.z; s.spin1 = s.spin0 + rnd(-1.6,1.6);
+  });
+}
+
+canvas.addEventListener('pointerenter', (e)=>{ hoverTarget = 1; setPointer(e.clientX, e.clientY); U.uPtr.value.copy(ptrTarget); U.uPtrUV.value.copy(ptrUVTarget); });
+canvas.addEventListener('pointerleave', ()=>{ if (!dragging) hoverTarget = 0; hoveredDoor = -1; });
+document.documentElement.addEventListener('mouseleave', ()=>{ hoverTarget = 0; });
+window.addEventListener('pointermove', (e)=>{
+  hoverTarget = 1; setPointer(e.clientX, e.clientY);
+  if (e.pointerType === 'mouse' && openIndex < 0) hoveredDoor = pickDoor();
+  canvas.classList.toggle('door', hoveredDoor >= 0);
+  if (dragging && downDoor < 0){
+    const dx = e.clientX - lastX, dy = e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    if (U.uDepth.value < 0.1){ rotateBy(dx, dy); velX = dx; velY = dy; }
+  }
+}, { passive:true });
+canvas.addEventListener('pointerdown', (e)=>{
+  if (openIndex >= 0) return;
+  dragging = true; hoverTarget = 1;
+  lastX = downX = e.clientX; lastY = downY = e.clientY; downT = performance.now(); velX = 0; velY = 0;
+  setPointer(e.clientX, e.clientY);
+  downDoor = pickDoor();
+  touchWater(e.clientX, e.clientY);
+  canvas.classList.add('dragging');
+  if (e.pointerType === 'mouse'){ try { canvas.setPointerCapture(e.pointerId); } catch(_){} }
+});
+function endDrag(e){
+  if (dragging && e && e.type === 'pointerup' && Math.hypot(e.clientX-downX, e.clientY-downY) < 8 && performance.now()-downT < 450){
+    if (downDoor >= 0) openDoor(downDoor); else startle();
+  }
+  dragging = false; downDoor = -1; canvas.classList.remove('dragging');
+  if (e && e.pointerType === 'touch') hoverTarget = 0;
+}
+window.addEventListener('pointerup', endDrag);
+window.addEventListener('pointercancel', endDrag);
+
+function onResize(){
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.getDrawingBufferSize(bufSize);
+  sceneRT.setSize(bufSize.x, bufSize.y);
+  U.uAspect.value = camera.aspect;
+  updatePxScale(); layoutDoors();
+}
+window.addEventListener('resize', onResize);
+
+// entering a door: the camera swims up to it before the sheet opens
+let enterTarget = 0, enterAmt = 0, enterIdx = 0;
+requestEnter = (i)=>{ enterIdx = i; enterTarget = 1; hoveredDoor = -1; addRipple(0.5, 0.5, 0.35, 0.9, new THREE.Vector3(...PROJECTS[i].a)); sfx.whoosh(); buzz(16); };
+requestLeave = ()=>{ enterTarget = 0; sfx.whoosh(true); buzz(8); };
+
+// ---------------------------------------------------------------
+// the dive
+// ---------------------------------------------------------------
+let pTarget = 0, ps = 0;
+function readScroll(){
+  if (openIndex >= 0) return;
+  const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  pTarget = Math.min(Math.max(window.scrollY / max, 0), 1);
+}
+window.addEventListener('scroll', readScroll, { passive:true });
+readScroll();
+
+const $ = id => document.getElementById(id);
+
+// ---------------------------------------------------------------
+// sound — all synthesised: an underwater ambience that darkens with depth,
+// a water "bloop" on every tap, bubbles as you sink, a pressure thump at depth marks
+// ---------------------------------------------------------------
+const buzz = p => { try { if (navigator.vibrate) navigator.vibrate(p); } catch(_){} };
+const sfx = (()=>{
+  let ctx = null, master = null, ambLP = null, ambGain = null, on = false, lastBubble = 0, userChose = false;
+  const btn = $('soundBtn'), lbl = $('soundLbl');
+  function noiseBuffer(sec, brown){
+    const n = Math.floor(ctx.sampleRate*sec), b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0);
+    let last = 0;
+    for (let i=0;i<n;i++){ const w = Math.random()*2-1; if (brown){ last = (last + 0.02*w)/1.02; d[i] = last*3.5; } else d[i] = w; }
+    return b;
+  }
+  function init(){
+    if (ctx) return true;
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
+    try { ctx = new AC(); } catch(e){ return false; }
+    master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+    const src = ctx.createBufferSource(); src.buffer = noiseBuffer(6, true); src.loop = true;
+    ambLP = ctx.createBiquadFilter(); ambLP.type = 'lowpass'; ambLP.frequency.value = 540; ambLP.Q.value = 0.6;
+    ambGain = ctx.createGain(); ambGain.gain.value = 0.42;
+    const lfo = ctx.createOscillator(), lfoG = ctx.createGain(); lfo.frequency.value = 0.07; lfoG.gain.value = 0.16;
+    lfo.connect(lfoG); lfoG.connect(ambGain.gain); lfo.start();
+    src.connect(ambLP); ambLP.connect(ambGain); ambGain.connect(master); src.start();
+    return true;
+  }
+  function set(v, byUser){
+    if (byUser) userChose = true;
+    if (v && !init()) return;
+    on = v;
+    if (ctx){ if (on && ctx.state === 'suspended') ctx.resume(); master.gain.setTargetAtTime(on ? 0.55 : 0, ctx.currentTime, 0.4); }
+    btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', String(on));
+    lbl.textContent = on ? 'Sound on' : 'Sound off';
+  }
+  function voice(fn){ if (on && ctx) fn(ctx.currentTime); }
+  function blip(f0, f1, dur, vol){
+    voice(now=>{
+      const o = ctx.createOscillator(), g = ctx.createGain(), lp = ctx.createBiquadFilter();
+      o.type = 'sine'; o.frequency.setValueAtTime(f0, now); o.frequency.exponentialRampToValueAtTime(f1, now + dur);
+      lp.type = 'lowpass'; lp.frequency.value = 2200;
+      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(vol, now + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      o.connect(lp); lp.connect(g); g.connect(master); o.start(now); o.stop(now + dur + 0.03);
+    });
+  }
+  function sweep(f0, f1, dur, vol){
+    voice(now=>{
+      const s = ctx.createBufferSource(); s.buffer = noiseBuffer(dur + 0.1, false);
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 0.9;
+      bp.frequency.setValueAtTime(f0, now); bp.frequency.exponentialRampToValueAtTime(f1, now + dur);
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(vol, now + dur*0.35); g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      s.connect(bp); bp.connect(g); g.connect(master); s.start(now); s.stop(now + dur + 0.05);
+    });
+  }
+  btn.addEventListener('click', ()=> set(!on, true));
+  // the first touch anywhere turns the ocean on (browsers only allow audio after a gesture)
+  const first = e => {
+    if (e.target && e.target.closest && e.target.closest('#soundBtn')) return;
+    if (!userChose) set(true);
+    window.removeEventListener('pointerdown', first, true); window.removeEventListener('keydown', first, true);
+  };
+  window.addEventListener('pointerdown', first, true); window.addEventListener('keydown', first, true);
+  return {
+    tap(strong){ blip(strong ? 620 : 880, strong ? 190 : 300, strong ? 0.32 : 0.2, strong ? 0.22 : 0.14); if (strong) setTimeout(()=> blip(1180, 520, 0.16, 0.06), 70); },
+    bubble(){ const n = performance.now(); if (n - lastBubble < 110) return; lastBubble = n; blip(rnd(900,1700), rnd(450,700), rnd(0.05,0.09), rnd(0.02,0.05)); },
+    thump(){ blip(90, 38, 0.6, 0.3); sweep(600, 160, 0.5, 0.05); },
+    whoosh(back){ sweep(back ? 1400 : 260, back ? 260 : 1400, 0.7, 0.07); if (!back) blip(420, 140, 0.4, 0.1); },
+    depth(p){ if (!ctx) return; ambLP.frequency.setTargetAtTime(560 - p*390, ctx.currentTime, 0.4); ambGain.gain.setTargetAtTime(0.42 + p*0.25, ctx.currentTime, 0.6); }
+  };
+})();
+const fold1Text = $('fold1Text'), bioCard = $('bioCard'), bioText = $('bioText'), workhead = $('workhead'), workText = $('workText');
+const gMark = $('gMark'), gRead = $('gRead'), gZone = $('gZone');
+const ss = (a,b,x)=>{ const t = Math.min(Math.max((x-a)/(b-a),0),1); return t*t*(3-2*t); };
+const W = [1,2,3].map(n=>({ turb:$('wt'+n), disp:$('wd'+n), id:'w'+n }));
+// type passing through water: displacement + blur + a cold tint, strongest mid-transit
+function submerge(el, filt, amt, extraTransform){
+  const k = reduceMotion ? 0 : amt;
+  if (k > 0.02){
+    filt.disp.setAttribute('scale', (k*38).toFixed(1));
+    el.style.filter = `url(#${filt.id}) blur(${(k*3.2).toFixed(2)}px) saturate(${(1 - k*0.5).toFixed(2)}) hue-rotate(${(k*-18).toFixed(1)}deg)`;
+  } else el.style.filter = 'none';
+  el.style.transform = extraTransform;
+}
+const PRESSURE_MARKS = [15, 30, 60, 100];
+let lastFt = 5;
+
+const clock = new THREE.Clock(), t0 = performance.now();
+let revealed = false;
+const wrapPI = a => Math.atan2(Math.sin(a), Math.cos(a));
+const easeInOut = x => x<0.5 ? 4*x*x*x : 1 - Math.pow(-2*x+2, 3)/2;
+const proj = new THREE.Vector3(), camBase = new THREE.Vector3(), camLook = new THREE.Vector3(), doorCam = new THREE.Vector3(), doorLook = new THREE.Vector3();
+let bubbleAcc = 0;
+
+function frame(){
+  requestAnimationFrame(frame);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  U.uTime.value += dt;
+  const t = U.uTime.value, motion = reduceMotion ? 0 : 1;
+
+  // dive progress, carried by the water
+  const pPrev = ps;
+  ps += (pTarget - ps) * (reduceMotion ? 1 : Math.min(1, dt*2.8));
+  const diveVel = (ps - pPrev) / Math.max(dt, 1e-4);
+  U.uDepth.value = ps;
+  const camY = ps * CAM_BOTTOM;
+
+  // pressure at each depth mark
+  const ft = Math.round(5 + ps*(MAX_FT-5));
+  for (const m of PRESSURE_MARKS){
+    if ((lastFt < m && ft >= m) || (lastFt > m && ft <= m)){
+      if (motion) U.uPulse.value = 1;
+      gMark.classList.remove('pulse'); void gMark.offsetWidth; gMark.classList.add('pulse');
+      sfx.thump(); buzz([10, 40, 10]);
+    }
+  }
+  lastFt = ft;
+  U.uPulse.value *= Math.exp(-dt*2.4);
+
+  U.uHover.value += (hoverTarget - U.uHover.value) * Math.min(1, dt*(hoverTarget > U.uHover.value ? 2.6 : 1.2));
+  U.uPtr.value.lerp(ptrTarget, Math.min(1, dt*5));
+  U.uPtrUV.value.lerp(ptrUVTarget, Math.min(1, dt*6));
+  U.uFlash.value *= Math.exp(-dt*1.2);
+  flashY.intensity = U.uFlash.value*8; flashP.intensity = U.uFlash.value*8;
+
+  // camera — sinks, narrows with pressure, rolls a little in the current, can swim into a door
+  enterAmt += (enterTarget - enterAmt) * Math.min(1, dt*3.2);
+  const eA = easeInOut(Math.min(Math.max(enterAmt,0),1));
+  camera.fov = BASE_FOV - ps*5 - eA*6;
+  camera.updateProjectionMatrix(); updatePxScale();
+  camBase.set(mx*0.35*motion, camY + my*0.22*motion, 8);
+  camLook.set(0, camY - THREE.MathUtils.clamp(diveVel, -1, 1)*1.6*motion, 0);
+  const dd = doors[enterIdx];
+  doorCam.set(dd.g.position.x, dd.g.position.y, dd.g.position.z + 1.25);   // through the frame, so only its light is left around the sheet
+  doorLook.copy(dd.g.position);
+  camera.position.x += ((camBase.x + (doorCam.x - camBase.x)*eA) - camera.position.x) * Math.min(1, dt*(1.5 + eA*4));
+  camera.position.y = camBase.y + (doorCam.y - camBase.y)*eA;
+  camera.position.z = camBase.z + (doorCam.z - camBase.z)*eA;
+  camLook.lerp(doorLook, eA);
+  camera.up.set(Math.sin(t*0.5)*0.008*motion + THREE.MathUtils.clamp(diveVel,-1,1)*0.02*motion, 1, 0).normalize();
+  camera.lookAt(camLook);
+  camera.updateMatrixWorld();
+  if (hoverTarget){ ray.setFromCamera(ndc, camera); ray.ray.intersectPlane(plane0, ptrTarget); }
+
+  // bubbles: a trickle always, a stream while you descend
+  bubbleAcc += dt * (0.8 + Math.max(0, diveVel)*90) * motion;
+  while (bubbleAcc > 1){ spawnBubble(camY); bubbleAcc -= 1; if (diveVel > 0.015 && Math.random() < 0.3) sfx.bubble(); }
+  sfx.depth(ps);
+  for (let i=0;i<BUB_N;i++){
+    if (bubLife[i] <= 0) continue;
+    bubPos[i*3+1] += bubVel[i]*dt;
+    bubPos[i*3]   += Math.sin(t*3.0 + bubSeed[i])*0.25*dt;
+    if (bubPos[i*3+1] > camY + 5.5){ bubLife[i] = 0; bubPos[i*3+1] = 999; }
+  }
+  bubGeo.attributes.position.needsUpdate = true;
+  bubGeo.attributes.aSize.needsUpdate = true;
+
+  // the mark — floats, rocks, flares on tap
+  const k = Math.min((performance.now()-t0)/1000/(reduceMotion?0.3:1.8), 1);
+  const ease = 1 - Math.pow(1-k, 4);
+  press *= Math.exp(-dt*5);
+  logo.scale.setScalar(Math.max(0.001, ease*(small?0.8:1)*(1 - 0.05*press*Math.cos((1-press)*9))));
+  if (!revealed && k >= 1){ revealed = true; ['wordmark','caption','cue'].forEach(id=> $(id).classList.add('show')); }
+  glass.envMapIntensity = 1.9 + U.uFlash.value*1.0;
+  if (!dragging){
+    if (motion && Math.abs(velX)+Math.abs(velY) > 0.04){ rotateBy(velX, velY); velX *= 0.935; velY *= 0.935; }
+    else { velX = 0; velY = 0; }
+  }
+  if (motion){
+    buoy.position.y = 0.12 + Math.sin(t*0.62)*0.07 + Math.sin(t*1.37)*0.02;
+    buoy.rotation.z = Math.sin(t*0.55 + 0.6)*0.05;
+    buoy.rotation.x = Math.sin(t*0.47)*0.06;
+    orbit.rotation.z = t*0.12;
+  }
+
+  // readable letters at any angle (uses the world orientation, rocking included)
+  logo.updateMatrixWorld();
+  camLocal.copy(camera.position); logo.worldToLocal(camLocal);
+  const mirror = camLocal.z < 0 ? -1 : 1;
+  logo.getWorldQuaternion(qWorld); qInv.copy(qWorld).invert();
+  upLocal.set(0,1,0).applyQuaternion(camera.quaternion).applyQuaternion(qInv);
+  if (Math.hypot(upLocal.x, upLocal.y) > 0.25) letterPhi += wrapPI(Math.atan2(-upLocal.x, upLocal.y) - letterPhi) * Math.min(1, dt*9);
+  letters.rotation.z = letterPhi;
+  letters.scale.set(mirror*LS, LS, LS);
+
+  glint.position.set(Math.cos(t*0.6)*1.5, buoy.position.y + Math.sin(t*0.6)*1.5, 1.3);
+  glint.intensity = 6 + U.uFlash.value*14;
+  tmpV.set(0, buoy.position.y, 0).project(camera);
+  U.uLogoUV.value.set(tmpV.x*0.5+0.5, tmpV.y*0.5+0.5);
+
+  // doors, labels, floating tags
+  const labelsOn = ss(0.3, 0.38, ps) * (1 - eA);
+  doors.forEach((d, i)=>{
+    const target = (hoveredDoor === i || (openIndex === i)) ? 1 : 0;
+    d.hover += (target - d.hover) * Math.min(1, dt*5);
+    d.memMat.uniforms.uHover.value = d.hover;
+    d.g.position.set(d.base.x + Math.sin(t*0.4 + i)*0.06*motion, d.base.y + Math.sin(t*0.55 + i*1.7)*0.08*motion, d.base.z + d.hover*0.45);
+    d.g.rotation.y = (d.narrow ? 0 : -d.side*0.22)*(1 - (openIndex===i ? eA : 0)) + mx*0.12*d.hover + Math.sin(t*0.3+i)*0.04*motion;
+    d.g.rotation.x = -my*0.10*d.hover;
+    d.spill.intensity = 2.5 + d.hover*6;
+
+    proj.set(d.base.x, d.base.y, d.base.z).project(camera);
+    const cxp = (proj.x*0.5+0.5)*window.innerWidth, cyp = (1-(proj.y*0.5+0.5))*window.innerHeight;
+    const vis = (1 - ss(0.20, 0.46, Math.abs(proj.y*0.5))) * labelsOn;
+    // label + CTAs beside (or under) the door
+    proj.set(d.base.x + (d.narrow ? 0 : -d.side*1.5), d.base.y + (d.narrow ? -1.35 : 0.35), d.base.z).project(camera);
+    const sx = (proj.x*0.5+0.5)*window.innerWidth, sy = (1-(proj.y*0.5+0.5))*window.innerHeight;
+    const lab = labelEls[i], w = 300;
+    lab.classList.toggle('right', !d.narrow && d.side > 0);
+    lab.classList.toggle('center', d.narrow);
+    lab.style.textAlign = d.narrow ? 'center' : (d.side > 0 ? 'right' : 'left');
+    let lx = d.narrow ? sx - w/2 : (d.side > 0 ? sx - w : sx);
+    lx = Math.min(Math.max(lx, 16), window.innerWidth - w - 16);
+    lab.style.transform = `translate3d(${lx.toFixed(1)}px, ${(sy - 40 + (1-vis)*14).toFixed(1)}px, 0)`;
+    lab.style.opacity = vis.toFixed(3);
+    lab.classList.toggle('live', vis > 0.6);
+    // tags orbit the whole door, evenly, leaving a clear window where the label sits
+    const pxPerUnit = window.innerHeight / (2*Math.tan(THREE.MathUtils.degToRad(camera.fov)/2) * Math.max(0.5, camera.position.z - d.base.z));
+    const tags = tagEls[i], n = tags.length;
+    const labelAng = d.side < 0 ? 0 : Math.PI;
+    const gap = 1.0, arc = Math.PI*2 - gap*2;
+    const rx = (d.hw + 0.62) * pxPerUnit, ry = (d.hh + 0.40) * pxPerUnit;
+    tags.forEach((tg, j)=>{
+      const a = labelAng + gap + arc*((j + 0.5)/n) + Math.sin(t*0.16 + j*1.7)*0.035*motion;
+      const lift = (j % 2 ? 0.12 : 0) * pxPerUnit;
+      const tx = cxp + Math.cos(a)*(rx + lift), ty = cyp - Math.sin(a)*(ry + lift) + Math.sin(t*0.8 + j*1.3)*3*motion;
+      tg.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0) translate(-50%, -50%) scale(${(0.96 + 0.06*d.hover).toFixed(3)})`;
+      tg.style.opacity = (vis * (0.6 + 0.4*d.hover) * (d.narrow ? 0 : 1)).toFixed(3);
+    });
+  });
+
+  // jellyfish
+  jellies.forEach(j=>{
+    j.kick = Math.max(0, j.kick - dt*0.45);
+    j.phase += dt*(1.6 + j.kick*4.0)*(motion||0.3);
+    const contraction = Math.max(0, Math.sin(j.phase));
+    j.idle -= dt;
+    if (j.idle < 0 && motion){ j.idle = rnd(6,11); vTmp.copy(j.pos).add(new THREE.Vector3(rnd(-0.8,0.8), rnd(-0.4,0.6), rnd(-0.4,0.4))); if (j.band[0] < -6 || !inClearing(vTmp)) j.target.copy(vTmp); }
+    vTmp.copy(j.target).sub(j.pos);
+    const dist = vTmp.length();
+    if (dist > 0.05 && motion){ vTmp.normalize(); j.vel.addScaledVector(vTmp, contraction*contraction*dt*(0.9 + j.kick*5.5)*Math.min(dist,1.5)); }
+    j.vel.multiplyScalar(Math.exp(-dt*1.6));
+    j.pos.addScaledVector(j.vel, dt*motion);
+    vTmp.copy(j.vel).multiplyScalar(2.2).add(UPV).normalize();
+    qJ.setFromUnitVectors(UPV, vTmp);
+    j.g.quaternion.slerp(qJ, Math.min(1, dt*3));
+    const sq = contraction*(0.10 + j.kick*0.12);
+    j.bell.scale.set(1 - sq*0.6, 0.72 + sq*0.25, 1 - sq*0.6);
+    vLoc.copy(j.vel).applyQuaternion(qInv.copy(j.g.quaternion).invert());
+    for (let n=0;n<TENT;n++){
+      const a = (n/TENT)*Math.PI*2, bx = Math.cos(a)*0.17*(1-sq*0.6), bz = Math.sin(a)*0.17*(1-sq*0.6);
+      const arr = j.tents[n].geometry.attributes.position.array;
+      for (let s=0;s<SEG;s++){
+        const f = s/SEG;
+        arr[s*3]   = bx*(1-f*0.5) + Math.sin(t*1.3 + s*0.32 + n)*0.05*f - vLoc.x*0.35*f*f;
+        arr[s*3+1] = -s*0.055 - 0.02 - vLoc.y*0.25*f*f;
+        arr[s*3+2] = bz*(1-f*0.5) + Math.cos(t*1.1 + s*0.28 + n)*0.04*f - vLoc.z*0.35*f*f;
+      }
+      j.tents[n].geometry.attributes.position.needsUpdate = true;
+    }
+  });
+  starfish.forEach(s=>{
+    if (s.t >= 1) return;
+    if (s.delay > 0){ s.delay -= dt; return; }
+    s.t = Math.min(1, s.t + dt/(reduceMotion ? 0.2 : 1.7));
+    const e = easeInOut(s.t);
+    s.g.position.lerpVectors(s.from, s.to, e);
+    s.g.position.y += Math.sin(Math.PI*e)*0.32*motion;
+    s.pts.rotation.z = s.spin0 + (s.spin1 - s.spin0)*e;
+    s.pts.rotation.x = -1.15 + Math.sin(Math.PI*e)*0.35;
+  });
+
+  // type sinks through the water
+  const f1 = ss(0.0, 0.07, ps);
+  fold1Text.style.opacity = (1 - ss(0.025, 0.08, ps)).toFixed(3);
+  submerge(fold1Text, W[0], Math.sin(Math.min(f1,1)*Math.PI*0.5), `translate3d(0, ${(-ps*700).toFixed(1)}px, 0) scale(${(1 - f1*0.06).toFixed(3)})`);
+  const bIn = ss(0.10, 0.17, ps), bOut = ss(0.27, 0.34, ps);
+  const bioVis = bIn * (1 - bOut);
+  bioCard.style.opacity = bioVis.toFixed(3);
+  bioCard.style.transform = `translate3d(0, ${((1-bIn)*90 - bOut*110).toFixed(1)}px, 0) scale(${(0.94 + 0.06*bioVis).toFixed(4)})`;
+  bioCard.style.pointerEvents = bioVis > 0.5 ? 'auto' : 'none';
+  submerge(bioText, W[1], Math.max(1 - bIn, bOut), 'none');
+  const wIn = ss(0.33, 0.38, ps), wOut = ss(0.40, 0.45, ps);
+  workhead.style.opacity = (wIn * (1 - wOut)).toFixed(3);
+  submerge(workText, W[2], Math.max(1 - wIn, wOut), `translate3d(0, ${((1-wIn)*60 - wOut*80).toFixed(1)}px, 0)`);
+  // liquid motion inside the displacement filters
+  W.forEach((f, n)=>{ const b = 0.006 + Math.sin(t*0.7 + n)*0.0015; f.turb.setAttribute('baseFrequency', `${b.toFixed(4)} ${(b*3.6).toFixed(4)}`); });
+
+  // gauge
+  gauge.style.opacity = (ss(0.01, 0.04, ps) * (1 - eA*0.8)).toFixed(3);
+  const gp = (ft/MAX_FT*100).toFixed(2) + '%';
+  gMark.style.top = gp; gRead.style.top = gp; gZone.style.top = gp;
+  gRead.textContent = ft + ' FT';
+  let zone = ZONES[0][1]; for (const [z, name] of ZONES) if (ft >= z) zone = name;
+  gZone.textContent = zone;
+  ticks.forEach(tk=>{ tk.el.style.opacity = (0.55 * ss(4, 9, Math.abs(tk.ft - ft))).toFixed(3); });
+
+  renderer.setRenderTarget(sceneRT);
+  renderer.render(scene, camera);
+  renderer.setRenderTarget(null);
+  renderer.render(postScene, postCam);
+}
+frame();
+})();
+</script>
